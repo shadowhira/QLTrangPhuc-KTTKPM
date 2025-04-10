@@ -1,6 +1,6 @@
 // API client để gọi đến backend
 
-const API_URL = "http://localhost:5001/api"
+const API_URL = "http://localhost:8080/api"
 
 // Define KhachHang interface
 interface KhachHang {
