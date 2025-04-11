@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { TKKhachHang } from "@/lib/types"
-import { fetchThongKeKhachHang } from "@/lib/api"
+import { fetchThongKeKhachHang, generateThongKeKhachHang } from "@/lib/api"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 export default function ThongKeKhachHangPage() {
@@ -19,18 +19,27 @@ export default function ThongKeKhachHangPage() {
     try {
       setLoading(true)
       const data = await fetchThongKeKhachHang()
-      setThongKeData(data)
+      console.log('Received statistics data:', data);
+      if (Array.isArray(data)) {
+        setThongKeData(data)
+      } else {
+        console.error('Received non-array data:', data);
+        setThongKeData([])
+      }
     } catch (error) {
       console.error("Error loading statistics:", error)
+      setThongKeData([])
     } finally {
       setLoading(false)
     }
   }
 
-  const chartData = thongKeData.map((item) => ({
-    name: `${item.khachHang.ho} ${item.khachHang.ten}`,
-    doanhThu: item.doanhThu,
-  }))
+  const chartData = thongKeData && thongKeData.length > 0
+    ? thongKeData.map((item) => ({
+        name: item.customerName || 'Khách hàng không tên',
+        doanhThu: item.totalRevenue || 0,
+      }))
+    : [{ name: 'Không có dữ liệu', doanhThu: 0 }]
 
   return (
     <div className="container mx-auto p-6">
@@ -48,6 +57,7 @@ export default function ThongKeKhachHangPage() {
                 left: 20,
                 bottom: 5,
               }}
+              className="p-[20px]"
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
@@ -62,9 +72,24 @@ export default function ThongKeKhachHangPage() {
 
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Bảng thống kê doanh thu</h2>
-        <Button onClick={loadThongKeData} className="mb-4">
-          Làm mới dữ liệu
-        </Button>
+        <div className="flex gap-4 mb-4">
+          <Button onClick={loadThongKeData}>
+            Làm mới dữ liệu
+          </Button>
+          <Button onClick={async () => {
+            setLoading(true);
+            try {
+              await generateThongKeKhachHang();
+              await loadThongKeData();
+            } catch (error) {
+              console.error("Error generating statistics:", error);
+            } finally {
+              setLoading(false);
+            }
+          }} variant="outline">
+            Tạo thống kê mới
+          </Button>
+        </div>
 
         {loading ? (
           <div className="text-center py-4">Đang tải...</div>
@@ -75,7 +100,6 @@ export default function ThongKeKhachHangPage() {
                 <TableRow>
                   <TableHead>ID</TableHead>
                   <TableHead>Họ tên khách hàng</TableHead>
-                  <TableHead>Số điện thoại</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right">Doanh thu (VNĐ)</TableHead>
                 </TableRow>
@@ -89,12 +113,11 @@ export default function ThongKeKhachHangPage() {
                   </TableRow>
                 ) : (
                   thongKeData.map((item) => (
-                    <TableRow key={item.khachHang.id}>
-                      <TableCell>{item.khachHang.id}</TableCell>
-                      <TableCell>{`${item.khachHang.ho} ${item.khachHang.ten}`}</TableCell>
-                      <TableCell>{item.khachHang.sdt}</TableCell>
-                      <TableCell>{item.khachHang.email}</TableCell>
-                      <TableCell className="text-right font-medium">{item.doanhThu.toLocaleString("vi-VN")}</TableCell>
+                    <TableRow key={item.customerId}>
+                      <TableCell>{item.customerId}</TableCell>
+                      <TableCell>{item.customerName}</TableCell>
+                      <TableCell>{item.customerEmail}</TableCell>
+                      <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
                     </TableRow>
                   ))
                 )}

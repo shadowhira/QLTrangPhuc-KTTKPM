@@ -18,15 +18,32 @@ export interface KhachHang {
 }
 
 export interface TKKhachHang {
-  khachHang: KhachHang
-  doanhThu: number
+  id: string
+  customerId: number
+  customerName: string
+  customerEmail: string
+  totalRevenue: number
+  totalOrders: number
+  lastUpdated: string
+  revenueByPeriod: Record<string, number>
+}
+
+export interface TKDoanhThu {
+  id: string
+  period: string // MONTH, QUARTER, YEAR
+  periodValue: string // yyyy-MM, yyyy-Qn, yyyy
+  startDate: string
+  endDate: string
+  totalRevenue: number
+  totalOrders: number
+  createdAt: string
 }
 
 export interface TrangPhuc {
   id: number
-  tenTP: string
-  loaiTP: string
-  giaThueTrenNgay: number
+  ten: string
+  loai: string
+  giaThueNgay: number
   giaBan: number
   trangThai: string
   moTa: string
@@ -37,14 +54,16 @@ export interface DonDatTrangPhuc {
   ngayDat: Date
   tongTien: number
   trangThai: string
-  khachHang: KhachHang
+  khachHangId: number
 }
 
 export interface ChiTietDonDat {
   id: number
   soLuongDat: number
   donGia: number
-  trangPhuc: TrangPhuc
-  donDatTrangPhuc: DonDatTrangPhuc
+  thanhTien: number
+  trangPhucId: number
+  tenTrangPhuc: string
+  donDatTrangPhucId: number
 }
 

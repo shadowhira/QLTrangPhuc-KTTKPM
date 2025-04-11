@@ -24,7 +24,7 @@ class ThongKeService {
           (await DonDatTrangPhuc.sum("tongTien", {
             where: {
               khachHangId: khachHang.id,
-              trangThai: "Đã thanh toán",
+              // trangThai: "Đã thanh toán",
             },
           })) || 0
 

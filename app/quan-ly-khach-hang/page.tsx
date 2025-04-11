@@ -64,15 +64,51 @@ export default function QuanLyKhachHangPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      // Tạo object mới để tránh vấn đề với kiểu dữ liệu
+      // Tạo object mới với cấu trúc đúng
+      const customerData: any = {
+        ho: formData.ho || '',
+        ten: formData.ten || '',
+        sdt: formData.sdt || '',
+        email: formData.email || '',
+        diaChi: {
+          thonXom: formData.diaChi?.thonXom || '',
+          quanHuyen: formData.diaChi?.quanHuyen || '',
+          tinhThanhPho: formData.diaChi?.tinhThanhPho || ''
+        }
+        // Không gửi các trường thừa
+      };
+
+      console.log('Data to send:', customerData);
+
       if (isEditing && currentId !== null) {
-        await updateKhachHang(currentId, formData as KhachHang)
+        await updateKhachHang(currentId, customerData)
+        alert('Cập nhật khách hàng thành công!')
+        resetForm()
+        loadKhachHang()
       } else {
-        await createKhachHang(formData as KhachHang)
+        try {
+          await createKhachHang(customerData)
+          alert('Thêm khách hàng mới thành công!')
+          resetForm()
+          loadKhachHang()
+        } catch (createError: any) {
+          if (createError.message.includes('duplicate key')) {
+            if (createError.message.includes('email')) {
+              alert('Email đã tồn tại trong hệ thống. Vui lòng sử dụng email khác.')
+            } else if (createError.message.includes('sdt')) {
+              alert('Số điện thoại đã tồn tại trong hệ thống. Vui lòng sử dụng số điện thoại khác.')
+            } else {
+              alert('Dữ liệu đã tồn tại trong hệ thống. Vui lòng kiểm tra lại.')
+            }
+          } else {
+            alert(`Lỗi khi thêm khách hàng: ${createError.message}`)
+          }
+        }
       }
-      resetForm()
-      loadKhachHang()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving customer:", error)
+      alert(`Lỗi: ${error.message}`)
     }
   }
 

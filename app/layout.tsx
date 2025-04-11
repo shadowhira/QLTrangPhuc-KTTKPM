@@ -32,6 +32,9 @@ export default function RootLayout({
               <a href="/thong-ke-khach-hang" className="hover:underline">
                 Thống kê KH
               </a>
+              <a href="/thong-ke-doanh-thu" className="hover:underline">
+                Thống kê DT
+              </a>
             </div>
           </div>
         </nav>
