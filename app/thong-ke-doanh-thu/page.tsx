@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -14,14 +14,21 @@ import {
 } from "@/lib/api"
 import type { TKDoanhThu } from "@/lib/types"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 
 export default function ThongKeDoanhThuPage() {
   const [thongKeData, setThongKeData] = useState<TKDoanhThu[]>([])
+  const [allThongKeData, setAllThongKeData] = useState<TKDoanhThu[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const [year, setYear] = useState(new Date().getFullYear())
   const [month, setMonth] = useState(new Date().getMonth() + 1)
   const [quarter, setQuarter] = useState(Math.floor((new Date().getMonth() + 3) / 3))
+
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10) // Số bản ghi mỗi trang
+  const pageSizeOptions = [5, 10, 20, 50, 100]
 
   useEffect(() => {
     loadThongKeData()
@@ -46,7 +53,8 @@ export default function ThongKeDoanhThuPage() {
           data = await fetchThongKeDoanhThu()
       }
 
-      setThongKeData(data)
+      setAllThongKeData(data)
+      setCurrentPage(1) // Reset về trang đầu tiên khi load dữ liệu mới
     } catch (error) {
       console.error("Error loading statistics:", error)
     } finally {
@@ -90,6 +98,17 @@ export default function ThongKeDoanhThuPage() {
     }
   }
 
+  // Tính toán tổng số trang
+  const totalPages = Math.ceil(allThongKeData.length / pageSize)
+
+  // Lấy dữ liệu cho trang hiện tại
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    setThongKeData(allThongKeData.slice(startIndex, endIndex))
+  }, [allThongKeData, currentPage, pageSize])
+
+  // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData.map((item) => ({
     name: item.periodValue,
     doanhThu: item.totalRevenue,
@@ -119,6 +138,9 @@ export default function ThongKeDoanhThuPage() {
               ) : (
                 <>
                   <div className="h-80 mb-6">
+                    <div className="mb-2 text-sm text-gray-500 italic">
+                      Biểu đồ hiển thị dữ liệu của trang hiện tại ({thongKeData.length} bản ghi)
+                    </div>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} className="p-[20px]">
                         <CartesianGrid strokeDasharray="3 3" />
@@ -163,6 +185,65 @@ export default function ThongKeDoanhThuPage() {
                       </TableBody>
                     </Table>
                   </div>
+
+                  {/* Phân trang */}
+                  {allThongKeData.length > 0 && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-700">Hiển thị</span>
+                          <select
+                            value={pageSize}
+                            onChange={(e) => setPageSize(Number(e.target.value))}
+                            className="border rounded p-1 text-sm"
+                          >
+                            {pageSizeOptions.map(size => (
+                              <option key={size} value={size}>{size}</option>
+                            ))}
+                          </select>
+                          <span className="text-sm text-gray-700">bản ghi mỗi trang</span>
+                        </div>
+
+                        <div className="text-sm text-gray-700">
+                          Hiển thị {allThongKeData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} đến {Math.min(currentPage * pageSize, allThongKeData.length)} trong tổng số {allThongKeData.length} bản ghi
+                        </div>
+                      </div>
+
+                      {allThongKeData.length > pageSize && (
+                        <div className="mt-2 flex justify-center">
+                          <Pagination>
+                            <PaginationContent>
+                              <PaginationItem>
+                                <PaginationPrevious
+                                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                              </PaginationItem>
+
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <PaginationItem key={page}>
+                                  <PaginationLink
+                                    isActive={currentPage === page}
+                                    onClick={() => setCurrentPage(page)}
+                                    className="cursor-pointer"
+                                  >
+                                    {page}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              ))}
+
+                              <PaginationItem>
+                                <PaginationNext
+                                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                />
+                              </PaginationItem>
+                            </PaginationContent>
+                          </Pagination>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </CardContent>
