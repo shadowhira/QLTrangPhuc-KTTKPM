@@ -47,6 +47,23 @@ async function generateCustomerStatistics(customerId) {
   }
 }
 
+// Hàm lấy danh sách khách hàng
+async function getCustomers() {
+  try {
+    const response = await fetch(`${API_URL}/khach-hang`);
+    if (!response.ok) {
+      console.error(`❌ Lỗi khi lấy danh sách khách hàng: ${response.status}`);
+      return [];
+    }
+    const data = await response.json();
+    console.log(`✅ Đã lấy ${data.length} khách hàng`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Lỗi khi lấy danh sách khách hàng: ${error.message}`);
+    return [];
+  }
+}
+
 // Hàm chính để tạo dữ liệu mẫu
 async function generateSampleData() {
   console.log("Bắt đầu tạo dữ liệu mẫu cho thống kê khách hàng...");
@@ -54,9 +71,12 @@ async function generateSampleData() {
   // Tạo thống kê cho tất cả khách hàng
   await generateAllCustomerStatistics();
 
-  // Tạo thống kê cho từng khách hàng (giả sử có 50 khách hàng)
-  for (let customerId = 1; customerId <= 50; customerId++) {
-    await generateCustomerStatistics(customerId);
+  // Lấy danh sách khách hàng thực tế
+  const customers = await getCustomers();
+
+  // Tạo thống kê cho từng khách hàng thực tế
+  for (const customer of customers) {
+    await generateCustomerStatistics(customer.id);
   }
 
   console.log("Hoàn thành tạo dữ liệu mẫu cho thống kê khách hàng!");

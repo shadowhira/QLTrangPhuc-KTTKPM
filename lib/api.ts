@@ -11,12 +11,41 @@ interface KhachHang {
 }
 
 // Khách hàng API
-export async function fetchKhachHang() {
-  const response = await fetch(`${API_URL}/khach-hang`)
+export async function fetchKhachHang(searchTerm?: string, page: number = 1, pageSize: number = 10) {
+  // Gọi API để lấy tất cả khách hàng
+  const response = await fetch(`${API_URL}/khach-hang`);
   if (!response.ok) {
-    throw new Error("Failed to fetch customers")
+    throw new Error("Failed to fetch customers");
   }
-  return response.json()
+
+  const allData = await response.json();
+  const data = Array.isArray(allData) ? allData : [];
+
+  // Lọc dữ liệu theo searchTerm nếu có
+  let filteredData = data;
+  if (searchTerm && searchTerm.trim() !== '') {
+    const searchTermLower = searchTerm.toLowerCase();
+    filteredData = data.filter(customer =>
+      (customer.ho + ' ' + customer.ten).toLowerCase().includes(searchTermLower) ||
+      (customer.email && customer.email.toLowerCase().includes(searchTermLower)) ||
+      (customer.sdt && customer.sdt.toLowerCase().includes(searchTermLower))
+    );
+  }
+
+  // Tính toán phân trang
+  const totalElements = filteredData.length;
+  const totalPages = Math.ceil(totalElements / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalElements);
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
+  // Trả về kết quả đã phân trang
+  return {
+    content: paginatedData,
+    totalElements: totalElements,
+    totalPages: totalPages || 1,
+    currentPage: page
+  };
 }
 
 export async function fetchKhachHangById(id: number) {
