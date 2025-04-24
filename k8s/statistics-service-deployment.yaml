@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statistics-service
+  namespace: customer-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statistics-service
+  template:
+    metadata:
+      labels:
+        app: statistics-service
+    spec:
+      containers:
+      - name: statistics-service
+        image: statistics-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SPRING_DATA_MONGODB_URI
+          value: mongodb://root:root@mongodb:27017/statisticsdb?authSource=admin
+        - name: CUSTOMER_SERVICE_URL
+          value: http://customer-service:8081
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statistics-service
+  namespace: customer-management
+spec:
+  selector:
+    app: statistics-service
+  ports:
+  - port: 8082
+    targetPort: 8082
+  type: ClusterIP
