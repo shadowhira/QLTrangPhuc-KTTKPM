@@ -10,26 +10,26 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Document(collection = "customer_revenue_statistics")
+@Document(collection = "thong_ke_doanh_thu_khach_hang")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerRevenueStatistics {
+public class ThongKeDoanhThuKhachHang {
     
     @Id
     private String id;
     
-    private Long customerId;
+    private Long khachHangId;
     
-    private String customerName;
+    private String tenKhachHang;
     
-    private String customerEmail;
+    private String emailKhachHang;
     
-    private BigDecimal totalRevenue;
+    private BigDecimal tongDoanhThu;
     
-    private Integer totalOrders;
+    private Integer tongDonHang;
     
-    private Map<String, BigDecimal> revenueByPeriod; // Map of period to revenue
+    private Map<String, BigDecimal> doanhThuTheoKy; // Map của kỳ đến doanh thu
     
-    private LocalDateTime lastUpdated = LocalDateTime.now();
+    private LocalDateTime capNhatLanCuoi = LocalDateTime.now();
 }

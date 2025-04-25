@@ -15,63 +15,63 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-public class CustomerServiceClient {
+public class KhachHangServiceClient {
 
     private final WebClient webClient;
 
     @Autowired
-    public CustomerServiceClient(WebClient.Builder webClientBuilder,
+    public KhachHangServiceClient(WebClient.Builder webClientBuilder,
                                 @Value("${customer.service.url}") String customerServiceUrl) {
         this.webClient = webClientBuilder.baseUrl(customerServiceUrl).build();
     }
 
-    public List<KhachHangDTO> getAllKhachHangs() {
+    public List<KhachHangDTO> layTatCaKhachHang() {
         return webClient.get()
                 .uri("/api/khach-hang")
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<KhachHangDTO>>() {})
-                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Error fetching khach hangs: " + e.getMessage())))
+                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Lỗi khi lấy danh sách khách hàng: " + e.getMessage())))
                 .block();
     }
 
-    public KhachHangDTO getKhachHangById(Long id) {
+    public KhachHangDTO layKhachHangTheoId(Long id) {
         return webClient.get()
                 .uri("/api/khach-hang/{id}", id)
                 .retrieve()
                 .bodyToMono(KhachHangDTO.class)
-                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Error fetching khach hang with id " + id + ": " + e.getMessage())))
+                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Lỗi khi lấy khách hàng với id " + id + ": " + e.getMessage())))
                 .block();
     }
 
-    public List<KhachHangDTO> getKhachHangsByTongChiTieu() {
+    public List<KhachHangDTO> layKhachHangTheoTongChiTieu() {
         return webClient.get()
                 .uri("/api/khach-hang/theo-chi-tieu")
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<KhachHangDTO>>() {})
-                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Error fetching khach hangs by tong chi tieu: " + e.getMessage())))
+                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Lỗi khi lấy khách hàng theo tổng chi tiêu: " + e.getMessage())))
                 .block();
     }
 
-    public List<DonDatTrangPhucDTO> getDonDatTrangPhucsBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+    public List<DonDatTrangPhucDTO> layDonDatTrangPhucTheoKhoangThoiGian(LocalDateTime ngayBatDau, LocalDateTime ngayKetThuc) {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/don-dat-trang-phuc/khoang-thoi-gian")
-                        .queryParam("startDate", startDate.format(formatter))
-                        .queryParam("endDate", endDate.format(formatter))
+                        .queryParam("startDate", ngayBatDau.format(formatter))
+                        .queryParam("endDate", ngayKetThuc.format(formatter))
                         .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<DonDatTrangPhucDTO>>() {})
-                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Error fetching don dat trang phucs between dates: " + e.getMessage())))
+                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Lỗi khi lấy đơn đặt trang phục trong khoảng thời gian: " + e.getMessage())))
                 .block();
     }
 
-    public List<DonDatTrangPhucDTO> getDonDatTrangPhucsByKhachHangId(Long khachHangId) {
+    public List<DonDatTrangPhucDTO> layDonDatTrangPhucTheoKhachHangId(Long khachHangId) {
         return webClient.get()
                 .uri("/api/don-dat-trang-phuc/khach-hang/{khachHangId}", khachHangId)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<DonDatTrangPhucDTO>>() {})
-                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Error fetching don dat trang phucs for khach hang " + khachHangId + ": " + e.getMessage())))
+                .onErrorResume(e -> Mono.error(new ServiceCommunicationException("Lỗi khi lấy đơn đặt trang phục cho khách hàng " + khachHangId + ": " + e.getMessage())))
                 .block();
     }
 }

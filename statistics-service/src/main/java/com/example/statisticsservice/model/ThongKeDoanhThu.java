@@ -9,26 +9,26 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Document(collection = "revenue_statistics")
+@Document(collection = "thong_ke_doanh_thu")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RevenueStatistics {
+public class ThongKeDoanhThu {
     
     @Id
     private String id;
     
-    private String period; // "MONTH", "QUARTER", "YEAR"
+    private String kyThongKe; // "THANG", "QUY", "NAM"
     
-    private String periodValue; // "2023-01", "2023-Q1", "2023"
+    private String giaTriKy; // "2023-01", "2023-Q1", "2023"
     
-    private LocalDateTime startDate;
+    private LocalDateTime ngayBatDau;
     
-    private LocalDateTime endDate;
+    private LocalDateTime ngayKetThuc;
     
-    private BigDecimal totalRevenue;
+    private BigDecimal tongDoanhThu;
     
-    private Integer totalOrders;
+    private Integer tongDonHang;
     
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime ngayTao = LocalDateTime.now();
 }
