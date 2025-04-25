@@ -1,22 +1,19 @@
 package com.example.statisticsservice.service;
 
 import com.example.statisticsservice.dto.KhachHangDTO;
-import com.example.statisticsservice.dto.ThongKeDoanhThuKhachHangDTO;
 import com.example.statisticsservice.dto.DonDatTrangPhucDTO;
 import com.example.statisticsservice.exception.ResourceNotFoundException;
 import com.example.statisticsservice.model.ThongKeDoanhThuKhachHang;
 import com.example.statisticsservice.repository.ThongKeDoanhThuKhachHangRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class ThongKeDoanhThuKhachHangService {
@@ -24,49 +21,41 @@ public class ThongKeDoanhThuKhachHangService {
     private final ThongKeDoanhThuKhachHangRepository thongKeDoanhThuKhachHangRepository;
     private final KhachHangServiceClient khachHangServiceClient;
 
-    @Autowired
     public ThongKeDoanhThuKhachHangService(ThongKeDoanhThuKhachHangRepository thongKeDoanhThuKhachHangRepository,
                                          KhachHangServiceClient khachHangServiceClient) {
         this.thongKeDoanhThuKhachHangRepository = thongKeDoanhThuKhachHangRepository;
         this.khachHangServiceClient = khachHangServiceClient;
     }
 
-    public List<ThongKeDoanhThuKhachHangDTO> layTatCaThongKeDoanhThuKhachHang() {
-        return thongKeDoanhThuKhachHangRepository.findAllByOrderByTongDoanhThuDesc().stream()
-                .map(this::chuyenSangDTO)
-                .collect(Collectors.toList());
+    public List<ThongKeDoanhThuKhachHang> layTatCaThongKeDoanhThuKhachHang() {
+        return thongKeDoanhThuKhachHangRepository.findAllByOrderByTongDoanhThuDesc();
     }
 
-    public ThongKeDoanhThuKhachHangDTO layThongKeDoanhThuKhachHangTheoId(String id) {
-        ThongKeDoanhThuKhachHang thongKe = thongKeDoanhThuKhachHangRepository.findById(id)
+    public ThongKeDoanhThuKhachHang layThongKeDoanhThuKhachHangTheoId(String id) {
+        return thongKeDoanhThuKhachHangRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thống kê doanh thu khách hàng với id: " + id));
-        return chuyenSangDTO(thongKe);
     }
 
-    public ThongKeDoanhThuKhachHangDTO layThongKeDoanhThuKhachHangTheoKhachHangId(Long khachHangId) {
-        ThongKeDoanhThuKhachHang thongKe = thongKeDoanhThuKhachHangRepository.findByKhachHangId(khachHangId)
+    public ThongKeDoanhThuKhachHang layThongKeDoanhThuKhachHangTheoKhachHangId(Long khachHangId) {
+        return thongKeDoanhThuKhachHangRepository.findByKhachHangId(khachHangId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thống kê doanh thu cho khách hàng có id: " + khachHangId));
-        return chuyenSangDTO(thongKe);
     }
 
-    public List<ThongKeDoanhThuKhachHangDTO> taoThongKeDoanhThuChoTatCaKhachHang() {
+    public List<ThongKeDoanhThuKhachHang> taoThongKeDoanhThuChoTatCaKhachHang() {
         // Lấy tất cả khách hàng
         List<KhachHangDTO> khachHangs = khachHangServiceClient.layTatCaKhachHang();
 
         // Tạo thống kê cho từng khách hàng
-        List<ThongKeDoanhThuKhachHang> tatCaThongKe = khachHangs.stream()
-                .map(this::taoThongKeDoanhThuKhachHang)
-                .collect(Collectors.toList());
+        List<ThongKeDoanhThuKhachHang> tatCaThongKe = new ArrayList<>();
+        for (KhachHangDTO khachHang : khachHangs) {
+            tatCaThongKe.add(taoThongKeDoanhThuKhachHang(khachHang));
+        }
 
         // Lưu tất cả thống kê
-        List<ThongKeDoanhThuKhachHang> thongKeDaLuu = thongKeDoanhThuKhachHangRepository.saveAll(tatCaThongKe);
-
-        return thongKeDaLuu.stream()
-                .map(this::chuyenSangDTO)
-                .collect(Collectors.toList());
+        return thongKeDoanhThuKhachHangRepository.saveAll(tatCaThongKe);
     }
 
-    public ThongKeDoanhThuKhachHangDTO taoThongKeDoanhThuTheoKhachHangId(Long khachHangId) {
+    public ThongKeDoanhThuKhachHang taoThongKeDoanhThuTheoKhachHangId(Long khachHangId) {
         // Lấy thông tin khách hàng
         KhachHangDTO khachHang = khachHangServiceClient.layKhachHangTheoId(khachHangId);
 
@@ -74,9 +63,7 @@ public class ThongKeDoanhThuKhachHangService {
         ThongKeDoanhThuKhachHang thongKe = taoThongKeDoanhThuKhachHang(khachHang);
 
         // Lưu thống kê
-        ThongKeDoanhThuKhachHang thongKeDaLuu = thongKeDoanhThuKhachHangRepository.save(thongKe);
-
-        return chuyenSangDTO(thongKeDaLuu);
+        return thongKeDoanhThuKhachHangRepository.save(thongKe);
     }
 
     private ThongKeDoanhThuKhachHang taoThongKeDoanhThuKhachHang(KhachHangDTO khachHang) {
@@ -116,17 +103,5 @@ public class ThongKeDoanhThuKhachHangService {
         return thongKe;
     }
 
-    // Phương thức hỗ trợ chuyển đổi giữa Entity và DTO
-    private ThongKeDoanhThuKhachHangDTO chuyenSangDTO(ThongKeDoanhThuKhachHang thongKe) {
-        ThongKeDoanhThuKhachHangDTO dto = new ThongKeDoanhThuKhachHangDTO();
-        dto.setId(thongKe.getId());
-        dto.setKhachHangId(thongKe.getKhachHangId());
-        dto.setTenKhachHang(thongKe.getTenKhachHang());
-        dto.setEmailKhachHang(thongKe.getEmailKhachHang());
-        dto.setTongDoanhThu(thongKe.getTongDoanhThu());
-        dto.setTongDonHang(thongKe.getTongDonHang());
-        dto.setDoanhThuTheoKy(thongKe.getDoanhThuTheoKy());
-        dto.setCapNhatLanCuoi(thongKe.getCapNhatLanCuoi());
-        return dto;
-    }
+
 }
