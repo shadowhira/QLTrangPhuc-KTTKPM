@@ -12,17 +12,17 @@ fi
 
 # 1. Tạo khách hàng mẫu
 echo "1. Tạo khách hàng mẫu..."
-node scripts/generate-customers.mjs
+node generate-customers.mjs
 echo "Đã hoàn thành tạo khách hàng mẫu."
 
 # 2. Tạo đơn hàng mẫu
 echo "2. Tạo đơn hàng mẫu..."
-node scripts/generate-orders.mjs
+node generate-orders.mjs
 echo "Đã hoàn thành tạo đơn hàng mẫu."
 
 # 3. Tạo dữ liệu thống kê
 echo "3. Tạo dữ liệu thống kê..."
-node scripts/generate-statistics.mjs
+node generate-statistics.mjs
 echo "Đã hoàn thành tạo dữ liệu thống kê."
 
 echo "=== HOÀN THÀNH TẠO DỮ LIỆU MẪU ĐẦY ĐỦ ==="

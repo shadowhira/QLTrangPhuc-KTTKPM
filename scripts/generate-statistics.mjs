@@ -55,7 +55,7 @@ async function generateMonthlyStatistics(year, month) {
 
     console.log(`Đang tạo thống kê tháng ${month}/${year} với doanh thu ${revenue.toLocaleString('vi-VN')} VNĐ...`);
 
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/monthly?year=${year}&month=${month}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/thang?nam=${year}&thang=${month}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ async function generateQuarterlyStatistics(year, quarter) {
 
     console.log(`Đang tạo thống kê quý ${quarter}/${year} với doanh thu ${totalRevenue.toLocaleString('vi-VN')} VNĐ...`);
 
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/quarterly?year=${year}&quarter=${quarter}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/quy?nam=${year}&quy=${quarter}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -147,7 +147,7 @@ async function generateYearlyStatistics(year) {
 
     console.log(`Đang tạo thống kê năm ${year} với doanh thu ${totalRevenue.toLocaleString('vi-VN')} VNĐ...`);
 
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/yearly?year=${year}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/nam?nam=${year}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -174,7 +174,7 @@ async function generateAllCustomerStatistics() {
   try {
     console.log("Đang tạo thống kê doanh thu cho tất cả khách hàng...");
 
-    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/generate-all`, {
+    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/tao-tat-ca`, {
       method: 'POST'
     });
 
@@ -197,7 +197,7 @@ async function generateCustomerStatistics(customerId) {
   try {
     console.log(`Đang tạo thống kê cho khách hàng ID=${customerId}...`);
 
-    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/generate/${customerId}`, {
+    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/tao/${customerId}`, {
       method: 'POST'
     });
 
@@ -251,9 +251,30 @@ async function generateCustomerStats() {
   // Tạo thống kê cho tất cả khách hàng
   await generateAllCustomerStatistics();
 
-  // Tạo thống kê cho từng khách hàng (giả sử có 50 khách hàng)
-  for (let customerId = 1; customerId <= 50; customerId++) {
-    await generateCustomerStatistics(customerId);
+  // Lấy danh sách khách hàng thực tế
+  try {
+    const response = await fetch(`${API_URL}/khach-hang`);
+    if (response.ok) {
+      const customers = await response.json();
+      console.log(`Đã lấy ${customers.length} khách hàng để tạo thống kê`);
+
+      // Tạo thống kê cho từng khách hàng thực tế
+      for (const customer of customers) {
+        await generateCustomerStatistics(customer.id);
+      }
+    } else {
+      console.error(`❌ Lỗi khi lấy danh sách khách hàng: ${response.status}`);
+      // Fallback: Tạo thống kê cho 43 khách hàng (dựa trên thông báo trước đó)
+      for (let customerId = 1; customerId <= 43; customerId++) {
+        await generateCustomerStatistics(customerId);
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Lỗi khi lấy danh sách khách hàng: ${error.message}`);
+    // Fallback: Tạo thống kê cho 43 khách hàng (dựa trên thông báo trước đó)
+    for (let customerId = 1; customerId <= 43; customerId++) {
+      await generateCustomerStatistics(customerId);
+    }
   }
 
   console.log("✅ Hoàn thành tạo dữ liệu mẫu cho thống kê khách hàng!");
