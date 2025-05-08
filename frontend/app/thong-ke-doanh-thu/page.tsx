@@ -96,6 +96,7 @@ const PaginationControls = ({
 export default function ThongKeDoanhThuPage() {
   const [thongKeData, setThongKeData] = useState<TKDoanhThu[]>([])
   const [allThongKeData, setAllThongKeData] = useState<TKDoanhThu[]>([])
+  const [filteredData, setFilteredData] = useState<TKDoanhThu[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const [year, setYear] = useState(new Date().getFullYear())
@@ -106,6 +107,17 @@ export default function ThongKeDoanhThuPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10) // Số bản ghi mỗi trang
   const pageSizeOptions = [5, 10, 20, 50, 100]
+
+  // Bộ lọc
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    minRevenue: "",
+    maxRevenue: "",
+    minOrders: "",
+    maxOrders: "",
+    showFilters: false
+  })
 
   useEffect(() => {
     loadThongKeData()
@@ -131,9 +143,12 @@ export default function ThongKeDoanhThuPage() {
       }
 
       setAllThongKeData(data)
+      setFilteredData(data) // Cập nhật filteredData với dữ liệu mới
       setCurrentPage(1) // Reset về trang đầu tiên khi load dữ liệu mới
     } catch (error) {
       console.error("Error loading statistics:", error)
+      setAllThongKeData([])
+      setFilteredData([])
     } finally {
       setLoading(false)
     }
@@ -176,24 +191,206 @@ export default function ThongKeDoanhThuPage() {
   }
 
   // Tính toán tổng số trang
-  const totalPages = Math.ceil(allThongKeData.length / pageSize)
+  const totalPages = Math.ceil(filteredData.length / pageSize)
+
+  // Hàm xử lý lọc dữ liệu
+  const applyFilters = () => {
+    let result = [...allThongKeData];
+
+    // Lọc theo ngày bắt đầu
+    if (filters.startDate) {
+      const startDate = new Date(filters.startDate);
+      result = result.filter(item => new Date(item.ngayBatDau) >= startDate);
+    }
+
+    // Lọc theo ngày kết thúc
+    if (filters.endDate) {
+      const endDate = new Date(filters.endDate);
+      result = result.filter(item => new Date(item.ngayKetThuc) <= endDate);
+    }
+
+    // Lọc theo doanh thu tối thiểu
+    if (filters.minRevenue) {
+      const minRevenue = parseFloat(filters.minRevenue);
+      result = result.filter(item => item.tongDoanhThu >= minRevenue);
+    }
+
+    // Lọc theo doanh thu tối đa
+    if (filters.maxRevenue) {
+      const maxRevenue = parseFloat(filters.maxRevenue);
+      result = result.filter(item => item.tongDoanhThu <= maxRevenue);
+    }
+
+    // Lọc theo số đơn hàng tối thiểu
+    if (filters.minOrders) {
+      const minOrders = parseInt(filters.minOrders);
+      result = result.filter(item => item.tongDonHang >= minOrders);
+    }
+
+    // Lọc theo số đơn hàng tối đa
+    if (filters.maxOrders) {
+      const maxOrders = parseInt(filters.maxOrders);
+      result = result.filter(item => item.tongDonHang <= maxOrders);
+    }
+
+    setFilteredData(result);
+    setCurrentPage(1); // Reset về trang đầu tiên khi áp dụng bộ lọc
+  };
+
+  // Hàm reset bộ lọc
+  const resetFilters = () => {
+    setFilters({
+      startDate: "",
+      endDate: "",
+      minRevenue: "",
+      maxRevenue: "",
+      minOrders: "",
+      maxOrders: "",
+      showFilters: false
+    });
+    setFilteredData(allThongKeData);
+    setCurrentPage(1);
+  };
+
+  // Áp dụng bộ lọc khi filters thay đổi
+  useEffect(() => {
+    if (allThongKeData.length > 0) {
+      applyFilters();
+    }
+  }, [allThongKeData]);
 
   // Lấy dữ liệu cho trang hiện tại
   useEffect(() => {
-    const startIndex = (currentPage - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    setThongKeData(allThongKeData.slice(startIndex, endIndex))
-  }, [allThongKeData, currentPage, pageSize])
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setThongKeData(filteredData.slice(startIndex, endIndex));
+  }, [filteredData, currentPage, pageSize]);
 
   // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData.map((item) => ({
     name: item.giaTriKy,
     doanhThu: item.tongDoanhThu,
-  }))
+  }));
+
+  // Component bộ lọc
+  const FilterComponent = () => {
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      setFilters(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      applyFilters();
+    };
+
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Bộ lọc thống kê</h3>
+          <Button
+            variant="ghost"
+            onClick={() => setFilters(prev => ({ ...prev, showFilters: !prev.showFilters }))}
+          >
+            {filters.showFilters ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+          </Button>
+        </div>
+
+        {filters.showFilters && (
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Từ ngày</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={filters.startDate}
+                  onChange={handleFilterChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Đến ngày</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={filters.endDate}
+                  onChange={handleFilterChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Doanh thu từ</label>
+                <input
+                  type="number"
+                  name="minRevenue"
+                  value={filters.minRevenue}
+                  onChange={handleFilterChange}
+                  placeholder="VNĐ"
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Doanh thu đến</label>
+                <input
+                  type="number"
+                  name="maxRevenue"
+                  value={filters.maxRevenue}
+                  onChange={handleFilterChange}
+                  placeholder="VNĐ"
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Số đơn hàng từ</label>
+                <input
+                  type="number"
+                  name="minOrders"
+                  value={filters.minOrders}
+                  onChange={handleFilterChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Số đơn hàng đến</label>
+                <input
+                  type="number"
+                  name="maxOrders"
+                  value={filters.maxOrders}
+                  onChange={handleFilterChange}
+                  className="border rounded p-2 w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={resetFilters}>
+                Đặt lại
+              </Button>
+              <Button type="submit">
+                Áp dụng
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Thống kê doanh thu trang phục</h1>
+
+      <FilterComponent />
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
@@ -264,13 +461,13 @@ export default function ThongKeDoanhThuPage() {
                   </div>
 
                   {/* Phân trang */}
-                  {allThongKeData.length > 0 && (
+                  {filteredData.length > 0 && (
                     <PaginationControls
                       currentPage={currentPage}
                       totalPages={totalPages}
                       pageSize={pageSize}
                       pageSizeOptions={pageSizeOptions}
-                      totalItems={allThongKeData.length}
+                      totalItems={filteredData.length}
                       setCurrentPage={setCurrentPage}
                       setPageSize={setPageSize}
                     />
@@ -371,13 +568,13 @@ export default function ThongKeDoanhThuPage() {
                   </div>
 
                   {/* Phân trang cho tab tháng */}
-                  {allThongKeData.length > 0 && (
+                  {filteredData.length > 0 && (
                     <PaginationControls
                       currentPage={currentPage}
                       totalPages={totalPages}
                       pageSize={pageSize}
                       pageSizeOptions={pageSizeOptions}
-                      totalItems={allThongKeData.length}
+                      totalItems={filteredData.length}
                       setCurrentPage={setCurrentPage}
                       setPageSize={setPageSize}
                     />
@@ -478,13 +675,13 @@ export default function ThongKeDoanhThuPage() {
                   </div>
 
                   {/* Phân trang cho tab quý */}
-                  {allThongKeData.length > 0 && (
+                  {filteredData.length > 0 && (
                     <PaginationControls
                       currentPage={currentPage}
                       totalPages={totalPages}
                       pageSize={pageSize}
                       pageSizeOptions={pageSizeOptions}
-                      totalItems={allThongKeData.length}
+                      totalItems={filteredData.length}
                       setCurrentPage={setCurrentPage}
                       setPageSize={setPageSize}
                     />
@@ -574,13 +771,13 @@ export default function ThongKeDoanhThuPage() {
                   </div>
 
                   {/* Phân trang cho tab năm */}
-                  {allThongKeData.length > 0 && (
+                  {filteredData.length > 0 && (
                     <PaginationControls
                       currentPage={currentPage}
                       totalPages={totalPages}
                       pageSize={pageSize}
                       pageSizeOptions={pageSizeOptions}
-                      totalItems={allThongKeData.length}
+                      totalItems={filteredData.length}
                       setCurrentPage={setCurrentPage}
                       setPageSize={setPageSize}
                     />
