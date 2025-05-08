@@ -19,24 +19,24 @@ export interface KhachHang {
 
 export interface TKKhachHang {
   id: string
-  customerId: number
-  customerName: string
-  customerEmail: string
-  totalRevenue: number
-  totalOrders: number
-  lastUpdated: string
-  revenueByPeriod: Record<string, number>
+  khachHangId: number
+  tenKhachHang: string
+  emailKhachHang: string
+  tongDoanhThu: number
+  tongDonHang: number
+  capNhatLanCuoi: string
+  doanhThuTheoKy: Record<string, number>
 }
 
 export interface TKDoanhThu {
   id: string
-  period: string // MONTH, QUARTER, YEAR
-  periodValue: string // yyyy-MM, yyyy-Qn, yyyy
-  startDate: string
-  endDate: string
-  totalRevenue: number
-  totalOrders: number
-  createdAt: string
+  kyThongKe: string // "THANG", "QUY", "NAM"
+  giaTriKy: string // "2023-01", "2023-Q1", "2023"
+  ngayBatDau: string
+  ngayKetThuc: string
+  tongDoanhThu: number
+  tongDonHang: number
+  ngayTao: string
 }
 
 export interface TrangPhuc {

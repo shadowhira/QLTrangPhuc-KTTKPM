@@ -48,15 +48,20 @@ export default function ThongKeKhachHangPage() {
     const startIndex = (currentPage - 1) * pageSize
     const endIndex = startIndex + pageSize
     setThongKeData(allThongKeData.slice(startIndex, endIndex))
+
+    // Ở đây allThongKeData đã được cập nhật với giá trị mới
+    console.log('AllThongKeData (đã cập nhật): ', allThongKeData);
   }, [allThongKeData, currentPage, pageSize])
 
   // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData && thongKeData.length > 0
     ? thongKeData.map((item) => ({
-        name: item.customerName || 'Khách hàng không tên',
-        doanhThu: item.totalRevenue || 0,
+        name: item.tenKhachHang || 'Khách hàng không tên',
+        doanhThu: item.tongDoanhThu || 0, // Đảm bảo có giá trị mặc định là 0 nếu tongDoanhThu là null hoặc undefined
       }))
     : [{ name: 'Không có dữ liệu', doanhThu: 0 }]
+
+
 
   return (
     <div className="container mx-auto p-6">
@@ -82,7 +87,7 @@ export default function ThongKeKhachHangPage() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip formatter={(value) => value.toLocaleString("vi-VN")} />
+              <Tooltip formatter={(value) => value ? value.toLocaleString("vi-VN") : '0'} />
               <Legend />
               <Bar dataKey="doanhThu" fill="#3b82f6" name="Doanh thu (VNĐ)" />
             </BarChart>
@@ -92,7 +97,7 @@ export default function ThongKeKhachHangPage() {
 
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Bảng thống kê doanh thu</h2>
-        <div className="flex gap-4 mb-4">
+        {/* <div className="flex gap-4 mb-4">
           <Button onClick={loadThongKeData}>
             Làm mới dữ liệu
           </Button>
@@ -109,7 +114,7 @@ export default function ThongKeKhachHangPage() {
           }} variant="outline">
             Tạo thống kê mới
           </Button>
-        </div>
+        </div> */}
 
         {loading ? (
           <div className="text-center py-4">Đang tải...</div>
@@ -133,11 +138,11 @@ export default function ThongKeKhachHangPage() {
                   </TableRow>
                 ) : (
                   thongKeData.map((item) => (
-                    <TableRow key={item.customerId}>
-                      <TableCell>{item.customerId}</TableCell>
-                      <TableCell>{item.customerName}</TableCell>
-                      <TableCell>{item.customerEmail}</TableCell>
-                      <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
+                    <TableRow key={item.id}>
+                      <TableCell>{item.khachHangId}</TableCell>
+                      <TableCell>{item.tenKhachHang}</TableCell>
+                      <TableCell>{item.emailKhachHang}</TableCell>
+                      <TableCell className="text-right font-medium">{item.tongDoanhThu ? item.tongDoanhThu.toLocaleString("vi-VN") : '0'}</TableCell>
                     </TableRow>
                   ))
                 )}

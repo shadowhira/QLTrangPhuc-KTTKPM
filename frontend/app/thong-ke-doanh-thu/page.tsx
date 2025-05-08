@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,84 @@ import {
 } from "@/lib/api"
 import type { TKDoanhThu } from "@/lib/types"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+
+// Component phân trang có thể tái sử dụng
+const PaginationControls = ({
+  currentPage,
+  totalPages,
+  pageSize,
+  pageSizeOptions,
+  totalItems,
+  setCurrentPage,
+  setPageSize
+}: {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  pageSizeOptions: number[];
+  totalItems: number;
+  setCurrentPage: (page: number) => void;
+  setPageSize: (size: number) => void;
+}) => {
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-700">Hiển thị</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="border rounded p-1 text-sm"
+          >
+            {pageSizeOptions.map(size => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
+          <span className="text-sm text-gray-700">bản ghi mỗi trang</span>
+        </div>
+
+        <div className="text-sm text-gray-700">
+          Hiển thị {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} đến {Math.min(currentPage * pageSize, totalItems)} trong tổng số {totalItems} bản ghi
+        </div>
+      </div>
+
+      {totalItems > pageSize && (
+        <div className="mt-2 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={currentPage === page}
+                    onClick={() => setCurrentPage(page)}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function ThongKeDoanhThuPage() {
   const [thongKeData, setThongKeData] = useState<TKDoanhThu[]>([])
@@ -41,13 +118,13 @@ export default function ThongKeDoanhThuPage() {
 
       switch (activeTab) {
         case "month":
-          data = await fetchThongKeDoanhThuByPeriod("MONTH")
+          data = await fetchThongKeDoanhThuByPeriod("THANG")
           break
         case "quarter":
-          data = await fetchThongKeDoanhThuByPeriod("QUARTER")
+          data = await fetchThongKeDoanhThuByPeriod("QUY")
           break
         case "year":
-          data = await fetchThongKeDoanhThuByPeriod("YEAR")
+          data = await fetchThongKeDoanhThuByPeriod("NAM")
           break
         default:
           data = await fetchThongKeDoanhThu()
@@ -110,13 +187,13 @@ export default function ThongKeDoanhThuPage() {
 
   // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData.map((item) => ({
-    name: item.periodValue,
-    doanhThu: item.totalRevenue,
+    name: item.giaTriKy,
+    doanhThu: item.tongDoanhThu,
   }))
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Thống kê doanh thu</h1>
+      <h1 className="text-3xl font-bold mb-6">Thống kê doanh thu trang phục</h1>
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
@@ -129,8 +206,8 @@ export default function ThongKeDoanhThuPage() {
         <TabsContent value="all">
           <Card>
             <CardHeader>
-              <CardTitle>Tổng quan doanh thu</CardTitle>
-              <CardDescription>Thống kê doanh thu theo tất cả các kỳ</CardDescription>
+              <CardTitle>Tổng quan doanh thu trang phục</CardTitle>
+              <CardDescription>Thống kê doanh thu trang phục theo tất cả các kỳ</CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -146,7 +223,7 @@ export default function ThongKeDoanhThuPage() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip formatter={(value) => value.toLocaleString("vi-VN")} />
+                        <Tooltip formatter={(value) => value ? value.toLocaleString("vi-VN") : '0'} />
                         <Legend />
                         <Bar dataKey="doanhThu" name="Doanh thu" fill="#8884d8" />
                       </BarChart>
@@ -173,12 +250,12 @@ export default function ThongKeDoanhThuPage() {
                         ) : (
                           thongKeData.map((item) => (
                             <TableRow key={item.id}>
-                              <TableCell>{item.periodValue}</TableCell>
-                              <TableCell>{item.period}</TableCell>
-                              <TableCell>{new Date(item.startDate).toLocaleDateString("vi-VN")}</TableCell>
-                              <TableCell>{new Date(item.endDate).toLocaleDateString("vi-VN")}</TableCell>
-                              <TableCell>{item.totalOrders}</TableCell>
-                              <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
+                              <TableCell>{item.giaTriKy}</TableCell>
+                              <TableCell>{item.kyThongKe}</TableCell>
+                              <TableCell>{new Date(item.ngayBatDau).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{new Date(item.ngayKetThuc).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{item.tongDonHang}</TableCell>
+                              <TableCell className="text-right font-medium">{item.tongDoanhThu ? item.tongDoanhThu.toLocaleString("vi-VN") : '0'}</TableCell>
                             </TableRow>
                           ))
                         )}
@@ -188,61 +265,15 @@ export default function ThongKeDoanhThuPage() {
 
                   {/* Phân trang */}
                   {allThongKeData.length > 0 && (
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-gray-700">Hiển thị</span>
-                          <select
-                            value={pageSize}
-                            onChange={(e) => setPageSize(Number(e.target.value))}
-                            className="border rounded p-1 text-sm"
-                          >
-                            {pageSizeOptions.map(size => (
-                              <option key={size} value={size}>{size}</option>
-                            ))}
-                          </select>
-                          <span className="text-sm text-gray-700">bản ghi mỗi trang</span>
-                        </div>
-
-                        <div className="text-sm text-gray-700">
-                          Hiển thị {allThongKeData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} đến {Math.min(currentPage * pageSize, allThongKeData.length)} trong tổng số {allThongKeData.length} bản ghi
-                        </div>
-                      </div>
-
-                      {allThongKeData.length > pageSize && (
-                        <div className="mt-2 flex justify-center">
-                          <Pagination>
-                            <PaginationContent>
-                              <PaginationItem>
-                                <PaginationPrevious
-                                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                />
-                              </PaginationItem>
-
-                              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                <PaginationItem key={page}>
-                                  <PaginationLink
-                                    isActive={currentPage === page}
-                                    onClick={() => setCurrentPage(page)}
-                                    className="cursor-pointer"
-                                  >
-                                    {page}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              ))}
-
-                              <PaginationItem>
-                                <PaginationNext
-                                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                />
-                              </PaginationItem>
-                            </PaginationContent>
-                          </Pagination>
-                        </div>
-                      )}
-                    </div>
+                    <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      pageSize={pageSize}
+                      pageSizeOptions={pageSizeOptions}
+                      totalItems={allThongKeData.length}
+                      setCurrentPage={setCurrentPage}
+                      setPageSize={setPageSize}
+                    />
                   )}
                 </>
               )}
@@ -253,8 +284,8 @@ export default function ThongKeDoanhThuPage() {
         <TabsContent value="month">
           <Card>
             <CardHeader>
-              <CardTitle>Thống kê doanh thu theo tháng</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu cho một tháng cụ thể</CardDescription>
+              <CardTitle>Thống kê doanh thu trang phục theo tháng</CardTitle>
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một tháng cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 mb-6">
@@ -290,36 +321,68 @@ export default function ThongKeDoanhThuPage() {
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
               ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Kỳ</TableHead>
-                        <TableHead>Ngày bắt đầu</TableHead>
-                        <TableHead>Ngày kết thúc</TableHead>
-                        <TableHead>Số đơn hàng</TableHead>
-                        <TableHead className="text-right">Doanh thu</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {thongKeData.length === 0 ? (
+                <>
+                  {/* Biểu đồ cho tab tháng */}
+                  <div className="h-80 mb-6">
+                    <div className="mb-2 text-sm text-gray-500 italic">
+                      Biểu đồ hiển thị dữ liệu của trang hiện tại ({thongKeData.length} bản ghi)
+                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} className="p-[20px]">
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => value ? value.toLocaleString("vi-VN") : '0'} />
+                        <Legend />
+                        <Bar dataKey="doanhThu" name="Doanh thu" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
+                          <TableHead>Kỳ</TableHead>
+                          <TableHead>Ngày bắt đầu</TableHead>
+                          <TableHead>Ngày kết thúc</TableHead>
+                          <TableHead>Số đơn hàng</TableHead>
+                          <TableHead className="text-right">Doanh thu</TableHead>
                         </TableRow>
-                      ) : (
-                        thongKeData.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{item.periodValue}</TableCell>
-                            <TableCell>{new Date(item.startDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{new Date(item.endDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{item.totalOrders}</TableCell>
-                            <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        {thongKeData.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                        ) : (
+                          thongKeData.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>{item.giaTriKy}</TableCell>
+                              <TableCell>{new Date(item.ngayBatDau).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{new Date(item.ngayKetThuc).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{item.tongDonHang}</TableCell>
+                              <TableCell className="text-right font-medium">{item.tongDoanhThu ? item.tongDoanhThu.toLocaleString("vi-VN") : '0'}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Phân trang cho tab tháng */}
+                  {allThongKeData.length > 0 && (
+                    <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      pageSize={pageSize}
+                      pageSizeOptions={pageSizeOptions}
+                      totalItems={allThongKeData.length}
+                      setCurrentPage={setCurrentPage}
+                      setPageSize={setPageSize}
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -328,8 +391,8 @@ export default function ThongKeDoanhThuPage() {
         <TabsContent value="quarter">
           <Card>
             <CardHeader>
-              <CardTitle>Thống kê doanh thu theo quý</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu cho một quý cụ thể</CardDescription>
+              <CardTitle>Thống kê doanh thu trang phục theo quý</CardTitle>
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một quý cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 mb-6">
@@ -365,36 +428,68 @@ export default function ThongKeDoanhThuPage() {
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
               ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Kỳ</TableHead>
-                        <TableHead>Ngày bắt đầu</TableHead>
-                        <TableHead>Ngày kết thúc</TableHead>
-                        <TableHead>Số đơn hàng</TableHead>
-                        <TableHead className="text-right">Doanh thu</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {thongKeData.length === 0 ? (
+                <>
+                  {/* Biểu đồ cho tab quý */}
+                  <div className="h-80 mb-6">
+                    <div className="mb-2 text-sm text-gray-500 italic">
+                      Biểu đồ hiển thị dữ liệu của trang hiện tại ({thongKeData.length} bản ghi)
+                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} className="p-[20px]">
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => value ? value.toLocaleString("vi-VN") : '0'} />
+                        <Legend />
+                        <Bar dataKey="doanhThu" name="Doanh thu" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
+                          <TableHead>Kỳ</TableHead>
+                          <TableHead>Ngày bắt đầu</TableHead>
+                          <TableHead>Ngày kết thúc</TableHead>
+                          <TableHead>Số đơn hàng</TableHead>
+                          <TableHead className="text-right">Doanh thu</TableHead>
                         </TableRow>
-                      ) : (
-                        thongKeData.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{item.periodValue}</TableCell>
-                            <TableCell>{new Date(item.startDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{new Date(item.endDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{item.totalOrders}</TableCell>
-                            <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        {thongKeData.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                        ) : (
+                          thongKeData.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>{item.giaTriKy}</TableCell>
+                              <TableCell>{new Date(item.ngayBatDau).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{new Date(item.ngayKetThuc).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{item.tongDonHang}</TableCell>
+                              <TableCell className="text-right font-medium">{item.tongDoanhThu ? item.tongDoanhThu.toLocaleString("vi-VN") : '0'}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Phân trang cho tab quý */}
+                  {allThongKeData.length > 0 && (
+                    <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      pageSize={pageSize}
+                      pageSizeOptions={pageSizeOptions}
+                      totalItems={allThongKeData.length}
+                      setCurrentPage={setCurrentPage}
+                      setPageSize={setPageSize}
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -403,8 +498,8 @@ export default function ThongKeDoanhThuPage() {
         <TabsContent value="year">
           <Card>
             <CardHeader>
-              <CardTitle>Thống kê doanh thu theo năm</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu cho một năm cụ thể</CardDescription>
+              <CardTitle>Thống kê doanh thu trang phục theo năm</CardTitle>
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một năm cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4 mb-6">
@@ -429,36 +524,68 @@ export default function ThongKeDoanhThuPage() {
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
               ) : (
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Kỳ</TableHead>
-                        <TableHead>Ngày bắt đầu</TableHead>
-                        <TableHead>Ngày kết thúc</TableHead>
-                        <TableHead>Số đơn hàng</TableHead>
-                        <TableHead className="text-right">Doanh thu</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {thongKeData.length === 0 ? (
+                <>
+                  {/* Biểu đồ cho tab năm */}
+                  <div className="h-80 mb-6">
+                    <div className="mb-2 text-sm text-gray-500 italic">
+                      Biểu đồ hiển thị dữ liệu của trang hiện tại ({thongKeData.length} bản ghi)
+                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} className="p-[20px]">
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value) => value ? value.toLocaleString("vi-VN") : '0'} />
+                        <Legend />
+                        <Bar dataKey="doanhThu" name="Doanh thu" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
+                          <TableHead>Kỳ</TableHead>
+                          <TableHead>Ngày bắt đầu</TableHead>
+                          <TableHead>Ngày kết thúc</TableHead>
+                          <TableHead>Số đơn hàng</TableHead>
+                          <TableHead className="text-right">Doanh thu</TableHead>
                         </TableRow>
-                      ) : (
-                        thongKeData.map((item) => (
-                          <TableRow key={item.id}>
-                            <TableCell>{item.periodValue}</TableCell>
-                            <TableCell>{new Date(item.startDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{new Date(item.endDate).toLocaleDateString("vi-VN")}</TableCell>
-                            <TableCell>{item.totalOrders}</TableCell>
-                            <TableCell className="text-right font-medium">{item.totalRevenue.toLocaleString("vi-VN")}</TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        {thongKeData.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center">Không có dữ liệu</TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                        ) : (
+                          thongKeData.map((item) => (
+                            <TableRow key={item.id}>
+                              <TableCell>{item.giaTriKy}</TableCell>
+                              <TableCell>{new Date(item.ngayBatDau).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{new Date(item.ngayKetThuc).toLocaleDateString("vi-VN")}</TableCell>
+                              <TableCell>{item.tongDonHang}</TableCell>
+                              <TableCell className="text-right font-medium">{item.tongDoanhThu ? item.tongDoanhThu.toLocaleString("vi-VN") : '0'}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Phân trang cho tab năm */}
+                  {allThongKeData.length > 0 && (
+                    <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      pageSize={pageSize}
+                      pageSizeOptions={pageSizeOptions}
+                      totalItems={allThongKeData.length}
+                      setCurrentPage={setCurrentPage}
+                      setPageSize={setPageSize}
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

@@ -238,7 +238,7 @@ export async function fetchThongKeDoanhThu() {
 
 export async function fetchThongKeDoanhThuByPeriod(period: string) {
   try {
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/period/${period}`);
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/ky/${period}`);
     if (!response.ok) {
       console.error('Error fetching revenue statistics by period:', response.status, response.statusText);
       const errorText = await response.text();
@@ -255,7 +255,7 @@ export async function fetchThongKeDoanhThuByPeriod(period: string) {
 
 export async function generateThongKeDoanhThuThang(year: number, month: number) {
   try {
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/monthly?year=${year}&month=${month}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/thang?nam=${year}&thang=${month}`, {
       method: 'POST'
     });
     if (!response.ok) {
@@ -273,7 +273,7 @@ export async function generateThongKeDoanhThuThang(year: number, month: number) 
 
 export async function generateThongKeDoanhThuQuy(year: number, quarter: number) {
   try {
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/quarterly?year=${year}&quarter=${quarter}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/quy?nam=${year}&quy=${quarter}`, {
       method: 'POST'
     });
     if (!response.ok) {
@@ -291,7 +291,7 @@ export async function generateThongKeDoanhThuQuy(year: number, quarter: number) 
 
 export async function generateThongKeDoanhThuNam(year: number) {
   try {
-    const response = await fetch(`${API_URL}/statistics/doanh-thu/yearly?year=${year}`, {
+    const response = await fetch(`${API_URL}/statistics/doanh-thu/nam?nam=${year}`, {
       method: 'POST'
     });
     if (!response.ok) {
