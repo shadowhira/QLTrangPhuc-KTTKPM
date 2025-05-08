@@ -31,6 +31,15 @@ export default function ThongKeKhachHangPage() {
     showFilters: false
   })
 
+  // Sắp xếp
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'ascending' | 'descending' | null;
+  }>({
+    key: 'tongDoanhThu',
+    direction: 'descending'
+  })
+
   useEffect(() => {
     loadThongKeData()
   }, [])
@@ -121,22 +130,63 @@ export default function ThongKeKhachHangPage() {
     }
   }
 
+  // Hàm xử lý sắp xếp
+  const requestSort = (key: string) => {
+    let direction: 'ascending' | 'descending' | null = 'ascending';
+
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'ascending') {
+        direction = 'descending';
+      } else if (sortConfig.direction === 'descending') {
+        direction = 'ascending';
+      }
+    }
+
+    setSortConfig({ key, direction });
+  };
+
+  // Hàm sắp xếp dữ liệu
+  const sortData = (data: TKKhachHang[]) => {
+    if (!sortConfig.key || !sortConfig.direction) {
+      return data;
+    }
+
+    return [...data].sort((a, b) => {
+      const aValue = a[sortConfig.key as keyof TKKhachHang];
+      const bValue = b[sortConfig.key as keyof TKKhachHang];
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'ascending'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return sortConfig.direction === 'ascending'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+  };
+
   // Áp dụng bộ lọc khi filters thay đổi
   useEffect(() => {
     if (allThongKeData.length > 0) {
       applyFilters();
     }
-  }, [allThongKeData]);
+  }, [allThongKeData, sortConfig]);
 
   // Lấy dữ liệu cho trang hiện tại
   useEffect(() => {
-    const startIndex = (currentPage - 1) * pageSize
-    const endIndex = startIndex + pageSize
-    setThongKeData(filteredData.slice(startIndex, endIndex))
+    const sortedData = sortData(filteredData);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    setThongKeData(sortedData.slice(startIndex, endIndex));
 
     // Ở đây filteredData đã được cập nhật với giá trị mới
     console.log('FilteredData (đã cập nhật): ', filteredData);
-  }, [filteredData, currentPage, pageSize])
+  }, [filteredData, currentPage, pageSize, sortConfig])
 
   // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData && thongKeData.length > 0
@@ -328,11 +378,61 @@ export default function ThongKeKhachHangPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Họ tên khách hàng</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-center">Số đơn hàng</TableHead>
-                  <TableHead className="text-right">Doanh thu (VNĐ)</TableHead>
+                  <TableHead
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => requestSort('khachHangId')}
+                  >
+                    ID
+                    {sortConfig.key === 'khachHangId' && (
+                      <span className="ml-1">
+                        {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => requestSort('tenKhachHang')}
+                  >
+                    Họ tên khách hàng
+                    {sortConfig.key === 'tenKhachHang' && (
+                      <span className="ml-1">
+                        {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer hover:bg-gray-100"
+                    onClick={() => requestSort('emailKhachHang')}
+                  >
+                    Email
+                    {sortConfig.key === 'emailKhachHang' && (
+                      <span className="ml-1">
+                        {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer hover:bg-gray-100"
+                    onClick={() => requestSort('tongDonHang')}
+                  >
+                    Số đơn hàng
+                    {sortConfig.key === 'tongDonHang' && (
+                      <span className="ml-1">
+                        {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </TableHead>
+                  <TableHead
+                    className="text-right cursor-pointer hover:bg-gray-100"
+                    onClick={() => requestSort('tongDoanhThu')}
+                  >
+                    Doanh thu (VNĐ)
+                    {sortConfig.key === 'tongDoanhThu' && (
+                      <span className="ml-1">
+                        {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

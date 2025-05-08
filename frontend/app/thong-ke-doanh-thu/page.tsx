@@ -119,6 +119,15 @@ export default function ThongKeDoanhThuPage() {
     showFilters: false
   })
 
+  // Sắp xếp
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'ascending' | 'descending' | null;
+  }>({
+    key: 'ngayBatDau',
+    direction: 'descending'
+  })
+
   useEffect(() => {
     loadThongKeData()
   }, [activeTab])
@@ -193,6 +202,55 @@ export default function ThongKeDoanhThuPage() {
   // Tính toán tổng số trang
   const totalPages = Math.ceil(filteredData.length / pageSize)
 
+  // Hàm xử lý sắp xếp
+  const requestSort = (key: string) => {
+    let direction: 'ascending' | 'descending' | null = 'ascending';
+
+    if (sortConfig.key === key) {
+      if (sortConfig.direction === 'ascending') {
+        direction = 'descending';
+      } else if (sortConfig.direction === 'descending') {
+        direction = 'ascending';
+      }
+    }
+
+    setSortConfig({ key, direction });
+  };
+
+  // Hàm sắp xếp dữ liệu
+  const sortData = (data: TKDoanhThu[]) => {
+    if (!sortConfig.key || !sortConfig.direction) {
+      return data;
+    }
+
+    return [...data].sort((a, b) => {
+      const aValue = a[sortConfig.key as keyof TKDoanhThu];
+      const bValue = b[sortConfig.key as keyof TKDoanhThu];
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      // Xử lý đặc biệt cho ngày
+      if (sortConfig.key === 'ngayBatDau' || sortConfig.key === 'ngayKetThuc' || sortConfig.key === 'ngayTao') {
+        const aDate = new Date(aValue as string);
+        const bDate = new Date(bValue as string);
+        return sortConfig.direction === 'ascending'
+          ? aDate.getTime() - bDate.getTime()
+          : bDate.getTime() - aDate.getTime();
+      }
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'ascending'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      return sortConfig.direction === 'ascending'
+        ? (aValue as number) - (bValue as number)
+        : (bValue as number) - (aValue as number);
+    });
+  };
+
   // Hàm xử lý lọc dữ liệu
   const applyFilters = () => {
     let result = [...allThongKeData];
@@ -257,14 +315,15 @@ export default function ThongKeDoanhThuPage() {
     if (allThongKeData.length > 0) {
       applyFilters();
     }
-  }, [allThongKeData]);
+  }, [allThongKeData, sortConfig]);
 
   // Lấy dữ liệu cho trang hiện tại
   useEffect(() => {
+    const sortedData = sortData(filteredData);
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    setThongKeData(filteredData.slice(startIndex, endIndex));
-  }, [filteredData, currentPage, pageSize]);
+    setThongKeData(sortedData.slice(startIndex, endIndex));
+  }, [filteredData, currentPage, pageSize, sortConfig]);
 
   // Dữ liệu cho biểu đồ - chỉ sử dụng dữ liệu của trang hiện tại
   const chartData = thongKeData.map((item) => ({
@@ -431,12 +490,72 @@ export default function ThongKeDoanhThuPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Kỳ</TableHead>
-                          <TableHead>Loại kỳ</TableHead>
-                          <TableHead>Ngày bắt đầu</TableHead>
-                          <TableHead>Ngày kết thúc</TableHead>
-                          <TableHead>Số đơn hàng</TableHead>
-                          <TableHead className="text-right">Doanh thu</TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('giaTriKy')}
+                          >
+                            Kỳ
+                            {sortConfig.key === 'giaTriKy' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('kyThongKe')}
+                          >
+                            Loại kỳ
+                            {sortConfig.key === 'kyThongKe' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayBatDau')}
+                          >
+                            Ngày bắt đầu
+                            {sortConfig.key === 'ngayBatDau' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayKetThuc')}
+                          >
+                            Ngày kết thúc
+                            {sortConfig.key === 'ngayKetThuc' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDonHang')}
+                          >
+                            Số đơn hàng
+                            {sortConfig.key === 'tongDonHang' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="text-right cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDoanhThu')}
+                          >
+                            Doanh thu
+                            {sortConfig.key === 'tongDoanhThu' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -540,11 +659,61 @@ export default function ThongKeDoanhThuPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Kỳ</TableHead>
-                          <TableHead>Ngày bắt đầu</TableHead>
-                          <TableHead>Ngày kết thúc</TableHead>
-                          <TableHead>Số đơn hàng</TableHead>
-                          <TableHead className="text-right">Doanh thu</TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('giaTriKy')}
+                          >
+                            Kỳ
+                            {sortConfig.key === 'giaTriKy' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayBatDau')}
+                          >
+                            Ngày bắt đầu
+                            {sortConfig.key === 'ngayBatDau' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayKetThuc')}
+                          >
+                            Ngày kết thúc
+                            {sortConfig.key === 'ngayKetThuc' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDonHang')}
+                          >
+                            Số đơn hàng
+                            {sortConfig.key === 'tongDonHang' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="text-right cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDoanhThu')}
+                          >
+                            Doanh thu
+                            {sortConfig.key === 'tongDoanhThu' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -647,11 +816,61 @@ export default function ThongKeDoanhThuPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Kỳ</TableHead>
-                          <TableHead>Ngày bắt đầu</TableHead>
-                          <TableHead>Ngày kết thúc</TableHead>
-                          <TableHead>Số đơn hàng</TableHead>
-                          <TableHead className="text-right">Doanh thu</TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('giaTriKy')}
+                          >
+                            Kỳ
+                            {sortConfig.key === 'giaTriKy' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayBatDau')}
+                          >
+                            Ngày bắt đầu
+                            {sortConfig.key === 'ngayBatDau' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayKetThuc')}
+                          >
+                            Ngày kết thúc
+                            {sortConfig.key === 'ngayKetThuc' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDonHang')}
+                          >
+                            Số đơn hàng
+                            {sortConfig.key === 'tongDonHang' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="text-right cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDoanhThu')}
+                          >
+                            Doanh thu
+                            {sortConfig.key === 'tongDoanhThu' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -743,11 +962,61 @@ export default function ThongKeDoanhThuPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Kỳ</TableHead>
-                          <TableHead>Ngày bắt đầu</TableHead>
-                          <TableHead>Ngày kết thúc</TableHead>
-                          <TableHead>Số đơn hàng</TableHead>
-                          <TableHead className="text-right">Doanh thu</TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('giaTriKy')}
+                          >
+                            Kỳ
+                            {sortConfig.key === 'giaTriKy' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayBatDau')}
+                          >
+                            Ngày bắt đầu
+                            {sortConfig.key === 'ngayBatDau' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('ngayKetThuc')}
+                          >
+                            Ngày kết thúc
+                            {sortConfig.key === 'ngayKetThuc' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDonHang')}
+                          >
+                            Số đơn hàng
+                            {sortConfig.key === 'tongDonHang' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
+                          <TableHead
+                            className="text-right cursor-pointer hover:bg-gray-100"
+                            onClick={() => requestSort('tongDoanhThu')}
+                          >
+                            Doanh thu
+                            {sortConfig.key === 'tongDoanhThu' && (
+                              <span className="ml-1">
+                                {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
