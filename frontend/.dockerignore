@@ -1,0 +1,28 @@
+# Các thư mục và file không cần thiết cho Docker build
+node_modules
+.next
+.git
+.github
+.vscode
+.env*
+!.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+README.md
+README-*.md
+SETUP.md
+kubernetes-commands.md
+FRONTEND_INTEGRATION.md
+
+# Các thư mục microservices khác
+customer-service
+statistics-service
+api-gateway
+k8s
+
+# Các file Docker khác
+docker-compose.yml
+deploy-kubernetes.sh
+restart-kubernetes.sh
+redeploy-api-gateway.sh
