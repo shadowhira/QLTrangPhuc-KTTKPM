@@ -1,6 +1,12 @@
 package com.example.customerservice.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +14,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "don_dat_trang_phuc")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DonDatTrangPhuc {
 
     @Id
@@ -25,70 +35,12 @@ public class DonDatTrangPhuc {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "khach_hang_id", nullable = false)
+    @JsonBackReference
     private KhachHang khachHang;
 
     @OneToMany(mappedBy = "donDatTrangPhuc", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ChiTietDonDat> chiTietDonDats = new ArrayList<>();
-
-    public DonDatTrangPhuc() {
-    }
-
-    public DonDatTrangPhuc(Long id, LocalDateTime ngayDat, BigDecimal tongTien, String trangThai, KhachHang khachHang, List<ChiTietDonDat> chiTietDonDats) {
-        this.id = id;
-        this.ngayDat = ngayDat;
-        this.tongTien = tongTien;
-        this.trangThai = trangThai;
-        this.khachHang = khachHang;
-        this.chiTietDonDats = chiTietDonDats;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getNgayDat() {
-        return ngayDat;
-    }
-
-    public void setNgayDat(LocalDateTime ngayDat) {
-        this.ngayDat = ngayDat;
-    }
-
-    public BigDecimal getTongTien() {
-        return tongTien;
-    }
-
-    public void setTongTien(BigDecimal tongTien) {
-        this.tongTien = tongTien;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public KhachHang getKhachHang() {
-        return khachHang;
-    }
-
-    public void setKhachHang(KhachHang khachHang) {
-        this.khachHang = khachHang;
-    }
-
-    public List<ChiTietDonDat> getChiTietDonDats() {
-        return chiTietDonDats;
-    }
-
-    public void setChiTietDonDats(List<ChiTietDonDat> chiTietDonDats) {
-        this.chiTietDonDats = chiTietDonDats;
-    }
 
     // Helper method to add order detail
     public void addChiTietDonDat(ChiTietDonDat chiTietDonDat) {

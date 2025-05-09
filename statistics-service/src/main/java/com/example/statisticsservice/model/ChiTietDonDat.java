@@ -1,5 +1,6 @@
-package com.example.statisticsservice.dto;
+package com.example.statisticsservice.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +9,8 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChiTietDonDatDTO {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ChiTietDonDat {
     private Long id;
     private Integer soLuongDat;
     private BigDecimal donGia;

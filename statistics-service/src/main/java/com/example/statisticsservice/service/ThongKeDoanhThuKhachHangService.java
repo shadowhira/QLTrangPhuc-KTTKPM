@@ -1,7 +1,7 @@
 package com.example.statisticsservice.service;
 
-import com.example.statisticsservice.dto.KhachHangDTO;
-import com.example.statisticsservice.dto.DonDatTrangPhucDTO;
+import com.example.statisticsservice.model.KhachHang;
+import com.example.statisticsservice.model.DonDatTrangPhuc;
 import com.example.statisticsservice.exception.ResourceNotFoundException;
 import com.example.statisticsservice.model.ThongKeDoanhThuKhachHang;
 import com.example.statisticsservice.repository.ThongKeDoanhThuKhachHangRepository;
@@ -43,11 +43,11 @@ public class ThongKeDoanhThuKhachHangService {
 
     public List<ThongKeDoanhThuKhachHang> taoThongKeDoanhThuChoTatCaKhachHang() {
         // Lấy tất cả khách hàng
-        List<KhachHangDTO> khachHangs = khachHangServiceClient.layTatCaKhachHang();
+        List<KhachHang> khachHangs = khachHangServiceClient.layTatCaKhachHang();
 
         // Tạo thống kê cho từng khách hàng
         List<ThongKeDoanhThuKhachHang> tatCaThongKe = new ArrayList<>();
-        for (KhachHangDTO khachHang : khachHangs) {
+        for (KhachHang khachHang : khachHangs) {
             tatCaThongKe.add(taoThongKeDoanhThuKhachHang(khachHang));
         }
 
@@ -57,7 +57,7 @@ public class ThongKeDoanhThuKhachHangService {
 
     public ThongKeDoanhThuKhachHang taoThongKeDoanhThuTheoKhachHangId(Long khachHangId) {
         // Lấy thông tin khách hàng
-        KhachHangDTO khachHang = khachHangServiceClient.layKhachHangTheoId(khachHangId);
+        KhachHang khachHang = khachHangServiceClient.layKhachHangTheoId(khachHangId);
 
         // Tạo thống kê
         ThongKeDoanhThuKhachHang thongKe = taoThongKeDoanhThuKhachHang(khachHang);
@@ -66,14 +66,14 @@ public class ThongKeDoanhThuKhachHangService {
         return thongKeDoanhThuKhachHangRepository.save(thongKe);
     }
 
-    private ThongKeDoanhThuKhachHang taoThongKeDoanhThuKhachHang(KhachHangDTO khachHang) {
+    private ThongKeDoanhThuKhachHang taoThongKeDoanhThuKhachHang(KhachHang khachHang) {
         // Lấy đơn đặt của khách hàng
-        List<DonDatTrangPhucDTO> donDatTrangPhucs = khachHangServiceClient.layDonDatTrangPhucTheoKhachHangId(khachHang.getId());
+        List<DonDatTrangPhuc> donDatTrangPhucs = khachHangServiceClient.layDonDatTrangPhucTheoKhachHangId(khachHang.getId());
 
         // Tính tổng doanh thu
         BigDecimal tongDoanhThu = donDatTrangPhucs.stream()
                 .filter(donDat -> "Đã thanh toán".equals(donDat.getTrangThai()))
-                .map(DonDatTrangPhucDTO::getTongTien)
+                .map(DonDatTrangPhuc::getTongTien)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Tính doanh thu theo kỳ (tháng)

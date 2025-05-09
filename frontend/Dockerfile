@@ -11,6 +11,9 @@ RUN npm install --force
 # Sao chép tất cả các file còn lại
 COPY . .
 
+# Thiết lập biến môi trường cho build
+ENV NEXT_PUBLIC_API_URL=http://localhost:30080/api
+
 # Build ứng dụng Next.js
 RUN npm run build
 

@@ -1,10 +1,18 @@
 package com.example.customerservice.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "trang_phuc")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TrangPhuc {
 
     @Id
@@ -28,73 +36,4 @@ public class TrangPhuc {
 
     @Column(name = "mo_ta", columnDefinition = "TEXT")
     private String moTa;
-
-    public TrangPhuc() {
-    }
-
-    public TrangPhuc(Long id, String ten, String loai, BigDecimal giaThueNgay, BigDecimal giaBan, String trangThai, String moTa) {
-        this.id = id;
-        this.ten = ten;
-        this.loai = loai;
-        this.giaThueNgay = giaThueNgay;
-        this.giaBan = giaBan;
-        this.trangThai = trangThai;
-        this.moTa = moTa;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTen() {
-        return ten;
-    }
-
-    public void setTen(String ten) {
-        this.ten = ten;
-    }
-
-    public String getLoai() {
-        return loai;
-    }
-
-    public void setLoai(String loai) {
-        this.loai = loai;
-    }
-
-    public BigDecimal getGiaThueNgay() {
-        return giaThueNgay;
-    }
-
-    public void setGiaThueNgay(BigDecimal giaThueNgay) {
-        this.giaThueNgay = giaThueNgay;
-    }
-
-    public BigDecimal getGiaBan() {
-        return giaBan;
-    }
-
-    public void setGiaBan(BigDecimal giaBan) {
-        this.giaBan = giaBan;
-    }
-
-    public String getTrangThai() {
-        return trangThai;
-    }
-
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
-    }
-
-    public String getMoTa() {
-        return moTa;
-    }
-
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
-    }
 }

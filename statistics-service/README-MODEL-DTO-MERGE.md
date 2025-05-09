@@ -5,18 +5,25 @@ Tài liệu này mô tả việc gộp DTO vào model trong module statistics-se
 ## Thay đổi đã thực hiện
 
 1. **Xóa các file DTO**:
-   - `ThongKeDoanhThuDTO.java`
-   - `ThongKeDoanhThuKhachHangDTO.java`
+   - `KhachHangDTO.java`
+   - `DiaChiDTO.java`
+   - `DonDatTrangPhucDTO.java`
+   - `ChiTietDonDatDTO.java`
 
-2. **Cập nhật các model để sử dụng trực tiếp trong API**:
+2. **Tạo các model tương ứng với DTO từ customer-service**:
+   - `KhachHang.java`
+   - `DiaChi.java`
+   - `DonDatTrangPhuc.java`
+   - `ChiTietDonDat.java`
    - Thêm annotation `@JsonInclude(JsonInclude.Include.NON_NULL)` để loại bỏ các trường null khi serialize
 
-3. **Cập nhật các service để trả về model thay vì DTO**:
-   - Loại bỏ các phương thức chuyển đổi `chuyenSangDTO`
+3. **Cập nhật KhachHangServiceClient để sử dụng model thay vì DTO**:
    - Thay đổi kiểu dữ liệu trả về từ DTO sang model
+   - Cập nhật các phương thức để làm việc với model
 
-4. **Cập nhật các controller để sử dụng model thay vì DTO**:
-   - Thay đổi kiểu dữ liệu tham số và kiểu dữ liệu trả về từ DTO sang model
+4. **Cập nhật các service và strategy để sử dụng model thay vì DTO**:
+   - Cập nhật ThongKeDoanhThuKhachHangService để sử dụng model
+   - Cập nhật ThongKeStrategy và các implementation để sử dụng model
 
 ## Lợi ích của việc gộp DTO vào model
 

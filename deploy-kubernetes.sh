@@ -47,6 +47,14 @@ else
   echo "Thư mục api-gateway không tồn tại. Bỏ qua build."
 fi
 
+# Kiểm tra thư mục frontend
+if [ -d "./frontend" ]; then
+  echo "Building frontend image..."
+  docker build -t frontend:latest ./frontend
+else
+  echo "Thư mục frontend không tồn tại. Bỏ qua build."
+fi
+
 # Triển khai các database
 echo "=== Đang triển khai cơ sở dữ liệu ==="
 kubectl apply -f k8s/postgres-deployment.yaml
@@ -83,6 +91,14 @@ else
   echo "File k8s/api-gateway-deployment.yaml không tồn tại. Bỏ qua triển khai."
 fi
 
+# Kiểm tra file frontend-deployment.yaml
+if [ -f "k8s/frontend-deployment.yaml" ]; then
+  echo "Triển khai frontend..."
+  kubectl apply -f k8s/frontend-deployment.yaml
+else
+  echo "File k8s/frontend-deployment.yaml không tồn tại. Bỏ qua triển khai."
+fi
+
 # Triển khai Ingress
 echo "=== Đang triển khai Ingress ==="
 
@@ -100,6 +116,8 @@ kubectl get all -n customer-management
 
 echo ""
 echo "=== Triển khai hoàn tất ==="
-echo "Bạn có thể truy cập ứng dụng qua API Gateway tại: http://localhost:8080"
+echo "Bạn có thể truy cập ứng dụng qua:"
+echo "- API Gateway: http://localhost:30080"
+echo "- Frontend: http://localhost:30005"
 echo "Để xem logs của service, sử dụng lệnh: kubectl logs -n customer-management deployment/[tên-service]"
 echo "Ví dụ: kubectl logs -n customer-management deployment/api-gateway"

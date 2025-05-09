@@ -1,11 +1,21 @@
 package com.example.customerservice.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "khach_hang")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class KhachHang {
 
     @Id
@@ -32,83 +42,6 @@ public class KhachHang {
     private DiaChi diaChi;
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<DonDatTrangPhuc> donDatTrangPhucs = new ArrayList<>();
-
-    public KhachHang() {
-    }
-
-    public KhachHang(Long id, String ho, String ten, String sdt, String email, Double tongChiTieu, DiaChi diaChi, List<DonDatTrangPhuc> donDatTrangPhucs) {
-        this.id = id;
-        this.ho = ho;
-        this.ten = ten;
-        this.sdt = sdt;
-        this.email = email;
-        this.tongChiTieu = tongChiTieu;
-        this.diaChi = diaChi;
-        this.donDatTrangPhucs = donDatTrangPhucs;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getHo() {
-        return ho;
-    }
-
-    public void setHo(String ho) {
-        this.ho = ho;
-    }
-
-    public String getTen() {
-        return ten;
-    }
-
-    public void setTen(String ten) {
-        this.ten = ten;
-    }
-
-    public String getSdt() {
-        return sdt;
-    }
-
-    public void setSdt(String sdt) {
-        this.sdt = sdt;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Double getTongChiTieu() {
-        return tongChiTieu;
-    }
-
-    public void setTongChiTieu(Double tongChiTieu) {
-        this.tongChiTieu = tongChiTieu;
-    }
-
-    public DiaChi getDiaChi() {
-        return diaChi;
-    }
-
-    public void setDiaChi(DiaChi diaChi) {
-        this.diaChi = diaChi;
-    }
-
-    public List<DonDatTrangPhuc> getDonDatTrangPhucs() {
-        return donDatTrangPhucs;
-    }
-
-    public void setDonDatTrangPhucs(List<DonDatTrangPhuc> donDatTrangPhucs) {
-        this.donDatTrangPhucs = donDatTrangPhucs;
-    }
 }

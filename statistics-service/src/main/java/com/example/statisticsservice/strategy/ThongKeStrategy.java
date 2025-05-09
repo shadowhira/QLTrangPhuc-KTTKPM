@@ -1,6 +1,6 @@
 package com.example.statisticsservice.strategy;
 
-import com.example.statisticsservice.dto.DonDatTrangPhucDTO;
+import com.example.statisticsservice.model.DonDatTrangPhuc;
 import com.example.statisticsservice.model.ThongKeDoanhThu;
 import com.example.statisticsservice.repository.ThongKeDoanhThuRepository;
 import com.example.statisticsservice.service.KhachHangServiceClient;
@@ -37,10 +37,10 @@ public interface ThongKeStrategy {
      * @param donDatTrangPhucs Danh sách đơn đặt trang phục
      * @return Tổng doanh thu
      */
-    default BigDecimal tinhTongDoanhThu(List<DonDatTrangPhucDTO> donDatTrangPhucs) {
+    default BigDecimal tinhTongDoanhThu(List<DonDatTrangPhuc> donDatTrangPhucs) {
         return donDatTrangPhucs.stream()
                 .filter(donDat -> "Đã thanh toán".equals(donDat.getTrangThai()))
-                .map(DonDatTrangPhucDTO::getTongTien)
+                .map(DonDatTrangPhuc::getTongTien)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
