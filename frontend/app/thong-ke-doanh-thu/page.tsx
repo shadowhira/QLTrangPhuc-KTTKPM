@@ -601,10 +601,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo tháng</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu trang phục cho một tháng cụ thể</CardDescription>
+              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một tháng cụ thể</CardDescription> */}
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4 mb-6">
+              {/* <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -632,7 +632,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div>
+              </div> */}
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
@@ -758,10 +758,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo quý</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu trang phục cho một quý cụ thể</CardDescription>
+              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một quý cụ thể</CardDescription> */}
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4 mb-6">
+              {/* <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -789,7 +789,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div>
+              </div> */}
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
@@ -915,10 +915,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo năm</CardTitle>
-              <CardDescription>Tạo thống kê doanh thu trang phục cho một năm cụ thể</CardDescription>
+              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một năm cụ thể</CardDescription> */}
             </CardHeader>
             <CardContent>
-              <div className="flex gap-4 mb-6">
+              {/* <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -935,7 +935,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div>
+              </div> */}
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
