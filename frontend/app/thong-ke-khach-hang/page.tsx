@@ -352,15 +352,23 @@ export default function ThongKeKhachHangPage() {
 
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold mb-4">Bảng thống kê doanh thu</h2>
-        {/* <div className="flex gap-4 mb-4">
+        <div className="flex gap-4 mb-4">
           <Button onClick={loadThongKeData}>
             Làm mới dữ liệu
           </Button>
           <Button onClick={async () => {
             setLoading(true);
             try {
-              await generateThongKeKhachHang();
-              await loadThongKeData();
+              const result = await generateThongKeKhachHang();
+              if (result && Array.isArray(result) && result.length > 0) {
+                // Nếu tạo thống kê thành công, hiển thị kết quả mới
+                setAllThongKeData(result);
+                setFilteredData(result);
+                setCurrentPage(1);
+              } else {
+                // Nếu không có kết quả, tải lại dữ liệu
+                await loadThongKeData();
+              }
             } catch (error) {
               console.error("Error generating statistics:", error);
             } finally {
@@ -369,7 +377,7 @@ export default function ThongKeKhachHangPage() {
           }} variant="outline">
             Tạo thống kê mới
           </Button>
-        </div> */}
+        </div>
 
         {loading ? (
           <div className="text-center py-4">Đang tải...</div>

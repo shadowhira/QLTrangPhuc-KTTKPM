@@ -17,6 +17,6 @@ public class DonDatTrangPhuc {
     private LocalDateTime ngayDat;
     private BigDecimal tongTien;
     private String trangThai;
-    private Long khachHangId;
+    // private Long khachHangId;
     private List<ChiTietDonDat> chiTietDonDats;
 }

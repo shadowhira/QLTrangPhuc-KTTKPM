@@ -166,8 +166,22 @@ export default function ThongKeDoanhThuPage() {
   const handleGenerateMonthly = async () => {
     try {
       setLoading(true)
-      await generateThongKeDoanhThuThang(year, month)
-      loadThongKeData()
+      const result = await generateThongKeDoanhThuThang(year, month)
+      if (result) {
+        // Chuyển tab sang "month" nếu đang ở tab khác
+        setActiveTab("month")
+        // Lấy dữ liệu thống kê theo tháng
+        const data = await fetchThongKeDoanhThuByPeriod("THANG")
+        // Lọc dữ liệu để chỉ hiển thị kỳ vừa tạo
+        const giaTriKy = `${year}-${month.toString().padStart(2, '0')}`
+        const filteredResult = data.filter(item => item.giaTriKy === giaTriKy)
+        setAllThongKeData(filteredResult)
+        setFilteredData(filteredResult)
+        setCurrentPage(1)
+      } else {
+        // Nếu không tạo được thống kê, vẫn load lại dữ liệu
+        loadThongKeData()
+      }
     } catch (error) {
       console.error("Error generating monthly statistics:", error)
     } finally {
@@ -178,8 +192,22 @@ export default function ThongKeDoanhThuPage() {
   const handleGenerateQuarterly = async () => {
     try {
       setLoading(true)
-      await generateThongKeDoanhThuQuy(year, quarter)
-      loadThongKeData()
+      const result = await generateThongKeDoanhThuQuy(year, quarter)
+      if (result) {
+        // Chuyển tab sang "quarter" nếu đang ở tab khác
+        setActiveTab("quarter")
+        // Lấy dữ liệu thống kê theo quý
+        const data = await fetchThongKeDoanhThuByPeriod("QUY")
+        // Lọc dữ liệu để chỉ hiển thị kỳ vừa tạo
+        const giaTriKy = `${year}-Q${quarter}`
+        const filteredResult = data.filter(item => item.giaTriKy === giaTriKy)
+        setAllThongKeData(filteredResult)
+        setFilteredData(filteredResult)
+        setCurrentPage(1)
+      } else {
+        // Nếu không tạo được thống kê, vẫn load lại dữ liệu
+        loadThongKeData()
+      }
     } catch (error) {
       console.error("Error generating quarterly statistics:", error)
     } finally {
@@ -190,8 +218,22 @@ export default function ThongKeDoanhThuPage() {
   const handleGenerateYearly = async () => {
     try {
       setLoading(true)
-      await generateThongKeDoanhThuNam(year)
-      loadThongKeData()
+      const result = await generateThongKeDoanhThuNam(year)
+      if (result) {
+        // Chuyển tab sang "year" nếu đang ở tab khác
+        setActiveTab("year")
+        // Lấy dữ liệu thống kê theo năm
+        const data = await fetchThongKeDoanhThuByPeriod("NAM")
+        // Lọc dữ liệu để chỉ hiển thị kỳ vừa tạo
+        const giaTriKy = `${year}`
+        const filteredResult = data.filter(item => item.giaTriKy === giaTriKy)
+        setAllThongKeData(filteredResult)
+        setFilteredData(filteredResult)
+        setCurrentPage(1)
+      } else {
+        // Nếu không tạo được thống kê, vẫn load lại dữ liệu
+        loadThongKeData()
+      }
     } catch (error) {
       console.error("Error generating yearly statistics:", error)
     } finally {
@@ -601,10 +643,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo tháng</CardTitle>
-              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một tháng cụ thể</CardDescription> */}
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một tháng cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -632,7 +674,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div> */}
+              </div>
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
@@ -758,10 +800,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo quý</CardTitle>
-              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một quý cụ thể</CardDescription> */}
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một quý cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -789,7 +831,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div> */}
+              </div>
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>
@@ -915,10 +957,10 @@ export default function ThongKeDoanhThuPage() {
           <Card>
             <CardHeader>
               <CardTitle>Thống kê doanh thu trang phục theo năm</CardTitle>
-              {/* <CardDescription>Tạo thống kê doanh thu trang phục cho một năm cụ thể</CardDescription> */}
+              <CardDescription>Tạo thống kê doanh thu trang phục cho một năm cụ thể</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* <div className="flex gap-4 mb-6">
+              <div className="flex gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-1">Năm</label>
                   <input
@@ -935,7 +977,7 @@ export default function ThongKeDoanhThuPage() {
                     Tạo thống kê
                   </Button>
                 </div>
-              </div> */}
+              </div>
 
               {loading ? (
                 <div className="text-center py-4">Đang tải dữ liệu...</div>

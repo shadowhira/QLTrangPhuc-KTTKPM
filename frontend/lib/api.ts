@@ -183,7 +183,7 @@ export async function fetchThongKeKhachHang() {
 
 export async function generateThongKeKhachHang() {
   try {
-    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/generate-all`, {
+    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/tao-tat-ca`, {
       method: 'POST'
     });
     if (!response.ok) {
@@ -202,7 +202,7 @@ export async function generateThongKeKhachHang() {
 
 export async function generateThongKeKhachHangById(customerId: number) {
   try {
-    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/generate/${customerId}`, {
+    const response = await fetch(`${API_URL}/statistics/khach-hang-doanh-thu/tao/${customerId}`, {
       method: 'POST'
     });
     if (!response.ok) {
