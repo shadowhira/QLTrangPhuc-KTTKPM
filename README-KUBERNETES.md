@@ -19,6 +19,7 @@ Tài liệu này hướng dẫn cách triển khai ứng dụng Customer Managem
 5. **Deployments**:
    - PostgreSQL
    - MongoDB
+   - Redis (cho caching)
    - Customer Service
    - Statistics Service
    - API Gateway
@@ -59,9 +60,10 @@ docker build -t customer-service:latest ./customer-service
 docker build -t statistics-service:latest ./statistics-service
 docker build -t api-gateway:latest ./api-gateway
 
-# Triển khai databases
+# Triển khai databases và cache
 kubectl apply -f k8s/postgres-deployment.yaml
 kubectl apply -f k8s/mongodb-deployment.yaml
+kubectl apply -f k8s/redis-deployment.yaml
 
 # Đợi databases khởi động (khoảng 30 giây)
 
@@ -110,6 +112,7 @@ http://customer-management.local
 kubectl logs -n customer-management deployment/api-gateway
 kubectl logs -n customer-management deployment/customer-service
 kubectl logs -n customer-management deployment/statistics-service
+kubectl logs -n customer-management deployment/redis
 ```
 
 ## Xóa triển khai

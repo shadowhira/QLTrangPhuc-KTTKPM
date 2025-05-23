@@ -55,10 +55,11 @@ else
   echo "Thư mục frontend không tồn tại. Bỏ qua build."
 fi
 
-# Triển khai các database
-echo "=== Đang triển khai cơ sở dữ liệu ==="
+# Triển khai các database và cache
+echo "=== Đang triển khai cơ sở dữ liệu và cache ==="
 kubectl apply -f k8s/postgres-deployment.yaml
 kubectl apply -f k8s/mongodb-deployment.yaml
+kubectl apply -f k8s/redis-deployment.yaml
 
 # Đợi database khởi động
 echo "=== Đợi cơ sở dữ liệu khởi động (30 giây) ==="

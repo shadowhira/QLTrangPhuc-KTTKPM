@@ -24,6 +24,14 @@ spec:
           value: mongodb://root:root@mongodb:27017/statisticsdb?authSource=admin
         - name: CUSTOMER_SERVICE_URL
           value: http://customer-service:8081
+        - name: SPRING_DATA_REDIS_HOST
+          value: redis
+        - name: SPRING_DATA_REDIS_PORT
+          value: "6379"
+        - name: SPRING_CACHE_TYPE
+          value: redis
+        - name: SPRING_CACHE_REDIS_TIME_TO_LIVE
+          value: "600000"
         resources:
           limits:
             cpu: "500m"
