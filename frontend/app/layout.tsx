@@ -35,6 +35,9 @@ export default function RootLayout({
               <a href="/thong-ke-doanh-thu" className="hover:underline">
                 Thống kê DT
               </a>
+              <a href="/cache-performance" className="hover:underline">
+                Hiệu năng Cache
+              </a>
             </div>
           </div>
         </nav>

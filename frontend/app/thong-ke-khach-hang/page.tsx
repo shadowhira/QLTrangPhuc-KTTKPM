@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { TKKhachHang } from "@/lib/types"
 import { fetchThongKeKhachHang, generateThongKeKhachHang } from "@/lib/api"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import PaginationControls from "@/components/pagination-controls"
 
 export default function ThongKeKhachHangPage() {
   const [thongKeData, setThongKeData] = useState<TKKhachHang[]>([])
@@ -468,61 +468,15 @@ export default function ThongKeKhachHangPage() {
 
         {/* Phân trang */}
         {filteredData.length > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">Hiển thị</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="border rounded p-1 text-sm"
-                >
-                  {pageSizeOptions.map(size => (
-                    <option key={size} value={size}>{size}</option>
-                  ))}
-                </select>
-                <span className="text-sm text-gray-700">bản ghi mỗi trang</span>
-              </div>
-
-              <div className="text-sm text-gray-700">
-                Hiển thị {filteredData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} đến {Math.min(currentPage * pageSize, filteredData.length)} trong tổng số {filteredData.length} bản ghi
-              </div>
-            </div>
-
-            {filteredData.length > pageSize && (
-              <div className="mt-2 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          isActive={currentPage === page}
-                          onClick={() => setCurrentPage(page)}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
-          </div>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            pageSizeOptions={pageSizeOptions}
+            totalItems={filteredData.length}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+          />
         )}
       </div>
     </div>

@@ -68,12 +68,13 @@ public class ThongKeDoanhThuKhachHangService {
 
     private ThongKeDoanhThuKhachHang taoThongKeDoanhThuKhachHang(KhachHang khachHang) {
         // Lấy đơn đặt của khách hàng
-        List<DonDatTrangPhuc> donDatTrangPhucs = khachHangServiceClient.layDonDatTrangPhucTheoKhachHangId(khachHang.getId());
+        Long khachHangId = (Long) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(khachHang, "id");
+        List<DonDatTrangPhuc> donDatTrangPhucs = khachHangServiceClient.layDonDatTrangPhucTheoKhachHangId(khachHangId);
 
         // Tính tổng doanh thu
         BigDecimal tongDoanhThu = donDatTrangPhucs.stream()
-                .filter(donDat -> "Đã thanh toán".equals(donDat.getTrangThai()))
-                .map(DonDatTrangPhuc::getTongTien)
+                .filter(donDat -> "Đã thanh toán".equals(com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "trangThai")))
+                .map(donDat -> (java.math.BigDecimal) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "tongTien"))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Tính doanh thu theo kỳ (tháng)
@@ -82,23 +83,29 @@ public class ThongKeDoanhThuKhachHangService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
 
         donDatTrangPhucs.stream()
-                .filter(donDat -> "Đã thanh toán".equals(donDat.getTrangThai()))
+                .filter(donDat -> "Đã thanh toán".equals(com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "trangThai")))
                 .forEach(donDat -> {
-                    String ky = donDat.getNgayDat().format(formatter);
-                    doanhThuTheoKy.merge(ky, donDat.getTongTien(), BigDecimal::add);
+                    LocalDateTime ngayDat = (LocalDateTime) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "ngayDat");
+                    String ky = ngayDat.format(formatter);
+                    BigDecimal tongTien = (BigDecimal) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "tongTien");
+                    doanhThuTheoKy.merge(ky, tongTien, BigDecimal::add);
                 });
 
         // Tạo hoặc cập nhật thống kê
-        ThongKeDoanhThuKhachHang thongKe = thongKeDoanhThuKhachHangRepository.findByKhachHangId(khachHang.getId())
+        ThongKeDoanhThuKhachHang thongKe = thongKeDoanhThuKhachHangRepository.findByKhachHangId(khachHangId)
                 .orElse(new ThongKeDoanhThuKhachHang());
 
-        thongKe.setKhachHangId(khachHang.getId());
-        thongKe.setTenKhachHang(khachHang.getHo() + " " + khachHang.getTen());
-        thongKe.setEmailKhachHang(khachHang.getEmail());
-        thongKe.setTongDoanhThu(tongDoanhThu);
-        thongKe.setTongDonHang(donDatTrangPhucs.size());
-        thongKe.setDoanhThuTheoKy(doanhThuTheoKy);
-        thongKe.setCapNhatLanCuoi(LocalDateTime.now());
+        String ho = (String) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(khachHang, "ho");
+        String ten = (String) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(khachHang, "ten");
+        String email = (String) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(khachHang, "email");
+
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "khachHangId", khachHangId);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "tenKhachHang", ho + " " + ten);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "emailKhachHang", email);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "tongDoanhThu", tongDoanhThu);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "tongDonHang", donDatTrangPhucs.size());
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "doanhThuTheoKy", doanhThuTheoKy);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "capNhatLanCuoi", LocalDateTime.now());
 
         return thongKe;
     }

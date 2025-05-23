@@ -39,8 +39,8 @@ public interface ThongKeStrategy {
      */
     default BigDecimal tinhTongDoanhThu(List<DonDatTrangPhuc> donDatTrangPhucs) {
         return donDatTrangPhucs.stream()
-                .filter(donDat -> "Đã thanh toán".equals(donDat.getTrangThai()))
-                .map(DonDatTrangPhuc::getTongTien)
+                .filter(donDat -> "Đã thanh toán".equals(com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "trangThai")))
+                .map(donDat -> (java.math.BigDecimal) com.example.statisticsservice.util.ReflectionUtil.getFieldValue(donDat, "tongTien"))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

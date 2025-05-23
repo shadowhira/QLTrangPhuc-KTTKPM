@@ -46,13 +46,13 @@ public class ThongKeTheoNamStrategy implements ThongKeStrategy {
 
         // Tạo và lưu thống kê
         ThongKeDoanhThu thongKe = new ThongKeDoanhThu();
-        thongKe.setKyThongKe(getKyThongKe());
-        thongKe.setGiaTriKy(giaTriKy);
-        thongKe.setNgayBatDau(ngayBatDau);
-        thongKe.setNgayKetThuc(ngayKetThuc);
-        thongKe.setTongDoanhThu(tongDoanhThu);
-        thongKe.setTongDonHang(tongDonHang);
-        thongKe.setNgayTao(LocalDateTime.now());
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "kyThongKe", getKyThongKe());
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "giaTriKy", giaTriKy);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "ngayBatDau", ngayBatDau);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "ngayKetThuc", ngayKetThuc);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "tongDoanhThu", tongDoanhThu);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "tongDonHang", tongDonHang);
+        com.example.statisticsservice.util.ReflectionUtil.setFieldValue(thongKe, "ngayTao", LocalDateTime.now());
 
         return repository.save(thongKe);
     }
