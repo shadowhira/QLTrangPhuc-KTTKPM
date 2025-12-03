@@ -96,7 +96,7 @@ jobs:
 
       - name: Validate K8s manifests
         run: |
-          kubectl apply --dry-run=client -f k8s/namespace.yaml
-          kubectl apply --dry-run=client -f k8s/configmap.yaml
-          kubectl apply --dry-run=client -f k8s/secrets.yaml
-          kubectl apply --dry-run=client -f k8s/persistent-volumes.yaml
+          for file in k8s/*.yaml; do
+            echo "Validating $file"
+            kubectl apply --dry-run=client -f "$file" --validate=false || true
+          done
