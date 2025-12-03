@@ -1,0 +1,104 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Job 1: Build and Test
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build Customer Service
+        run: |
+          cd customer-service
+          mvn clean package -DskipTests
+
+      - name: Build Statistics Service
+        run: |
+          cd statistics-service
+          mvn clean package -DskipTests
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: api-gateway/package-lock.json
+
+      - name: Build API Gateway
+        run: |
+          cd api-gateway
+          npm install
+
+  # Job 2: Build Docker Images
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Customer Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./customer-service
+          push: false
+          tags: customer-service:${{ github.sha }}
+
+      - name: Build Statistics Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./statistics-service
+          push: false
+          tags: statistics-service:${{ github.sha }}
+
+      - name: Build API Gateway Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-gateway
+          push: false
+          tags: api-gateway:${{ github.sha }}
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          tags: frontend:${{ github.sha }}
+
+  # Job 3: Validate Kubernetes Configs
+  k8s-validate:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Validate K8s manifests
+        run: |
+          kubectl apply --dry-run=client -f k8s/namespace.yaml
+          kubectl apply --dry-run=client -f k8s/configmap.yaml
+          kubectl apply --dry-run=client -f k8s/secrets.yaml
+          kubectl apply --dry-run=client -f k8s/persistent-volumes.yaml
